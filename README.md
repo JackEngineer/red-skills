@@ -18,7 +18,14 @@
 
 拿到 ZIP 后，进入小红书创作后台，在原作品的「更新版本」中选择该文件。[小红书 RED Skill 管理页](https://creator.xiaohongshu.com/new/skill-hub)
 
-### 从 GitHub 下载
+### 免登录下载
+
+从 GitHub Release 下载最新发布的 ZIP。
+
+- [下载 Motion CN ZIP](https://github.com/JackEngineer/red-skills/releases/latest/download/motion-prompt.zip)
+- [下载小红书小工具开发指南 ZIP](https://github.com/JackEngineer/red-skills/releases/latest/download/xhs-minitool-guide.zip)
+
+### 从 GitHub Actions 下载
 
 每次推送到 `main` 后，GitHub Actions 会为每项技能生成一个 ZIP。登录 GitHub，打开最近一次成功的 `main` 构建，在运行详情底部的 **Artifacts（构建产物）** 中选择所需的 `<技能目录名>.zip`。下载的就是可上传小红书的 ZIP。[打包小红书技能工作流](https://github.com/JackEngineer/red-skills/actions/workflows/package-skills.yml?query=branch%3Amain)
 
