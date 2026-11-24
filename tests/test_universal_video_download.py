@@ -9,6 +9,7 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 
 SCRIPTS = (
     Path(__file__).resolve().parents[1]
@@ -63,6 +64,21 @@ def load_script(name):
 
 
 class VideoDownloadTest(unittest.TestCase):
+    def test_xiaohongshu_missing_formats_explains_how_to_retry(self):
+        module = load_script("download")
+        failure = subprocess.CompletedProcess(
+            [], 1, "", "ERROR: [XiaoHongShu] example: No video formats found!"
+        )
+        with (
+            patch.object(module.importlib.util, "find_spec", return_value=True),
+            patch.object(module.subprocess, "run", return_value=failure),
+            self.assertRaisesRegex(RuntimeError, "完整分享链接"),
+        ):
+            module.download_generic(
+                "https://www.xiaohongshu.com/explore/000000000000000000000000",
+                Path("temporary-output"),
+            )
+
     def test_shared_text_routes_all_unique_targets(self):
         mod = load_script("download")
         result = mod.extract_targets(
