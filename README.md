@@ -14,6 +14,24 @@
 - **Motion CN** 查询动效、镜头和视觉提示词。使用 Node.js 18 或以上运行 `node skills/motion-prompt/scripts/motion-prompt.js search 打字机 --limit 5`。预览链接和其他命令见[技能说明](skills/motion-prompt/SKILL.md)。
 - **小红书小工具开发指南** 用于查询容器能力或判断功能可行性。将整个技能目录添加到支持 `SKILL.md` 的助手中，输入 `$xhs-minitool-guide help` 查看用法。见[技能说明](skills/xhs-minitool-guide/SKILL.md)。
 
+## 打包上传
+
+安装 Python 3 和 Git 后，在仓库根目录运行。
+
+```sh
+# 打包指定技能
+python3 scripts/package_skills.py motion-prompt
+
+# 为全部技能各生成一个 ZIP
+python3 scripts/package_skills.py --all
+```
+
+ZIP 写入 `dist/<技能目录名>.zip`。再次打包会覆盖同名 ZIP。每个包以 `SKILL.md` 为根目录入口，保留技能内的文件结构。从小红书创作后台进入原作品的「更新版本」，选择对应的 ZIP。[小红书 RED Skill 管理页](https://creator.xiaohongshu.com/new/skill-hub)
+
+命令读取工作区中已纳入 Git 的文件，已有文件的修改可以直接打包。新增或删除技能文件后，先登记变动，例如运行 `git add -A -- skills/motion-prompt`，再打包。
+
+遇到不支持的格式、符号链接或超出体积限制的文件时，命令会指出问题。小红书限制单个文件最多 10 MiB，每项技能解压后合计最多 30 MiB。
+
 ## 许可与来源
 
 - Motion CN 基于 Shohei Ohtaki 原作，由 JackEngineer 维护简体中文汉化。发行包保留 [MIT 许可证](skills/motion-prompt/LICENSE.txt)和[第三方声明](skills/motion-prompt/THIRD-PARTY-NOTICES.md)。[原项目](https://github.com/showheyohtaki/motion-prompt)
