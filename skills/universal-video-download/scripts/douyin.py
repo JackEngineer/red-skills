@@ -1,93 +1,180 @@
-import asyncio,json,re,urllib.request,urllib.parse,subprocess,argparse,sys,shutil
+import argparse
+import asyncio
+import json
 from pathlib import Path
-UA='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
-parser=argparse.ArgumentParser(description='下载公开抖音视频，校验文件；不负责微信投递。')
-parser.add_argument('url', help='抖音链接或包含链接的完整分享文字')
-parser.add_argument('--output-dir', type=Path, default=Path.home()/'Downloads'/'douyin', help='保存目录')
-parser.add_argument('--name', default='抖音视频', help='简短主题名，自动移除不安全字符')
-parser.add_argument('--browser', type=Path, help='浏览器可执行文件路径；默认先试内置 Chromium')
-parser.add_argument('--compress-above-mib', type=float, default=80, help='超过此大小另生成微信版；不是通道官方限制')
-args=parser.parse_args()
-link=re.search(r'https?://(?:v\.douyin\.com|www\.douyin\.com|douyin\.com)/[^\s<>]+',args.url)
-if not link:
- parser.error('请提供有效的抖音链接。')
-share_url=link.group(0).rstrip('，。；！）')
-name=re.sub(r'[\x00-\x1f\x7f\\/:*?"<>|#]','_',args.name)
-name=' '.join(name.split()).strip(' ._')[:45] or '抖音视频'
-OUT=args.output_dir.expanduser().resolve()/(name+'.mp4')
-for tool in ['curl','ffprobe']:
- if not shutil.which(tool):parser.error('缺少必需工具：'+tool)
+import re
+import shutil
+import subprocess
+import sys
+from urllib.parse import unquote, urlsplit
 
-def search(o,vid):
- if isinstance(o,dict):
-  if 'video' in o and str(o.get('aweme_id',''))==vid:return o
-  for v in o.values():
-   r=search(v,vid)
-   if r:return r
- elif isinstance(o,list):
-  for v in o:
-   r=search(v,vid)
-   if r:return r
-async def main():
- from playwright.async_api import async_playwright
- with urllib.request.urlopen(urllib.request.Request(share_url,headers={'User-Agent':UA}),timeout=30) as r:final=r.url
- m=re.search(r'/video/(\d+)',final)
- if not m:raise RuntimeError('该链接不是普通视频。若为商品页，请按技能中的内置播放器流程下载；脚本不自动处理商城页。')
- vid=m.group(1);print('视频编号',vid,flush=True)
- OUT=globals()['OUT'].with_name(globals()['OUT'].stem+'_'+vid+'.mp4')
- async with async_playwright() as p:
-  if args.browser:
-   b=await p.chromium.launch(headless=True,executable_path=str(args.browser))
-  else:
-   try:b=await p.chromium.launch(headless=True)
-   except Exception as exc:
-    chrome=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
-    if not chrome.exists():raise RuntimeError('内置浏览器启动失败，请安装 Chromium 或用 --browser 指定浏览器。') from exc
-    b=await p.chromium.launch(headless=True,executable_path=str(chrome))
-  page=await b.new_page(user_agent=UA);captured=[]
-  async def response(resp):
-   if 'aweme/detail' in resp.url:
+
+def is_douyin_url(url):
+    parsed = urlsplit(url)
+    host = parsed.hostname or ""
+    return parsed.scheme in ("http", "https") and (
+        host == "douyin.com" or host.endswith(".douyin.com")
+    )
+
+
+def find_video(data, video_id):
+    if isinstance(data, dict):
+        if (
+            isinstance(data.get("video"), dict)
+            and str(data.get("aweme_id")) == video_id
+        ):
+            return data["video"]
+        children = data.values()
+    elif isinstance(data, list):
+        children = data
+    else:
+        return None
+    for child in children:
+        video = find_video(child, video_id)
+        if video is not None:
+            return video
+    return None
+
+
+def media_urls(video):
+    urls = {}
+    for key in ("download_addr", "play_addr"):
+        address = video.get(key)
+        if not isinstance(address, dict) or not isinstance(
+            address.get("url_list"), list
+        ):
+            continue
+        for url in address["url_list"]:
+            if isinstance(url, str) and url.startswith("https://"):
+                urls[url] = None
+    return list(urls)
+
+
+async def discover(url, executable):
     try:
-     aw=search(await resp.json(),vid)
-     if aw:captured.append(aw)
-    except Exception:pass
-  page.on('response',response)
-  await page.goto(final,wait_until='domcontentloaded',timeout=40000);await page.wait_for_timeout(8000)
-  aw=captured[0] if captured else None
-  if not aw:
-   for s in re.findall(r'<script[^>]*>(.*?)</script>',await page.content(),re.S):
-    for candidate in [s,urllib.parse.unquote(s)]:
-     try:aw=search(json.loads(candidate),vid)
-     except ValueError:pass
-     if aw:break
-    if aw:break
-  if not aw:
-   t=await page.evaluate('async u=>(await fetch(u,{credentials:"include"})).text()',f'https://www.douyin.com/aweme/v1/web/aweme/detail/?aweme_id={vid}&aid=1128&cookie_enabled=true&platform=webapp')
-   try:aw=search(json.loads(t),vid)
-   except ValueError:pass
-  if not aw:raise RuntimeError('网页未返回可下载的视频详情')
-  print('标题',aw.get('desc'),flush=True)
-  urls=[]
-  for k in ['download_addr','play_addr']:
-   for u in aw.get('video',{}).get(k,{}).get('url_list',[]):
-    if u not in urls:urls.append(u)
-  OUT.parent.mkdir(parents=True,exist_ok=True)
-  for u in urls:
-   r=subprocess.run(['curl','-L','--fail','-sS','--max-time','180','-A',UA,'-e','https://www.douyin.com/','-o',str(OUT)+'.part',u],capture_output=True,text=True)
-   if not r.returncode:
-    probe=subprocess.run(['ffprobe','-v','error','-show_entries','format=duration,size:stream=codec_type,codec_name','-of','json',str(OUT)+'.part'],capture_output=True,text=True)
-    if probe.returncode==0 and any(x.get('codec_type')=='video' for x in json.loads(probe.stdout).get('streams',[])):
-     Path(str(OUT)+'.part').replace(OUT);break
-  else:raise RuntimeError('所有候选下载地址失败')
-  await b.close()
- data=json.loads(probe.stdout);dst=OUT
- if OUT.stat().st_size>args.compress_above_mib*1024*1024:
-  if not shutil.which('ffmpeg'):raise RuntimeError('原件已下载，但缺少 ffmpeg，无法生成压缩版：'+str(OUT))
-  dst=OUT.with_name(OUT.stem+'_微信版.mp4');rate=max(180,int(60*1024*1024*8/float(data['format']['duration'])/1000)-80)
-  subprocess.run(['ffmpeg','-y','-v','error','-i',str(OUT),'-vf','scale=720:-2','-c:v','h264_videotoolbox','-b:v',f'{rate}k','-c:a','aac','-b:a','64k','-movflags','+faststart',str(dst)],check=True)
-  data=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_entries','format=duration,size:stream=codec_type,codec_name','-of','json',str(dst)]))
- print(json.dumps({'文件':str(dst),'信息':data,'大小MB':dst.stat().st_size/1024/1024},ensure_ascii=False))
-if __name__ == '__main__':
- try:asyncio.run(main())
- except KeyboardInterrupt:sys.exit('已取消下载。')
- except Exception as exc:sys.exit('下载失败：'+str(exc))
+        from playwright.async_api import Error, async_playwright
+    except ImportError as exc:
+        raise RuntimeError("缺少 Playwright，请按运行说明安装") from exc
+
+    async with async_playwright() as playwright:
+        try:
+            browser = await playwright.chromium.launch(executable_path=executable)
+        except Error as exc:
+            raise RuntimeError(
+                "浏览器启动失败，请安装 Chromium 或用 --browser 指定浏览器"
+            ) from exc
+        try:
+            page = await browser.new_page()
+            payloads = []
+
+            async def collect(response):
+                if (
+                    not is_douyin_url(response.url)
+                    or "/aweme/detail" not in urlsplit(response.url).path
+                ):
+                    return
+                try:
+                    payloads.append(await response.json())
+                except (Error, ValueError):
+                    return
+
+            page.on("response", collect)
+            response = await page.goto(
+                url, wait_until="domcontentloaded", timeout=40_000
+            )
+            if (
+                response is None
+                or response.status >= 400
+                or not is_douyin_url(page.url)
+            ):
+                raise RuntimeError("普通视频页无法公开访问")
+            match = re.fullmatch(r"/video/(\d+)/?", urlsplit(page.url).path)
+            if not match:
+                raise RuntimeError(
+                    "链接未打开普通视频页。商品页请使用播放器提供的下载入口"
+                )
+            video_id = match.group(1)
+            for script in await page.locator("script:not([src])").all_text_contents():
+                for candidate in dict.fromkeys((script, unquote(script))):
+                    try:
+                        payloads.append(json.loads(candidate))
+                        break
+                    except ValueError:
+                        continue
+            for _ in range(16):
+                for payload in payloads:
+                    video = find_video(payload, video_id)
+                    if video and (urls := media_urls(video)):
+                        return urls
+                await asyncio.sleep(0.5)
+            raise RuntimeError("公开页面未提供可识别的媒体地址")
+        finally:
+            await browser.close()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="提取抖音普通公开视频")
+    parser.add_argument("url", help="抖音视频链接或短链")
+    parser.add_argument(
+        "--output-dir", type=Path, required=True, help="本次下载的暂存目录"
+    )
+    parser.add_argument("--browser", help="Chromium 或 Chrome 可执行文件路径")
+    args = parser.parse_args()
+    if not is_douyin_url(args.url):
+        parser.error("请提供抖音视频链接")
+    if not shutil.which("curl"):
+        parser.error("缺少 curl，请按运行说明安装")
+
+    from download import probe
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    output = args.output_dir.resolve() / "source.mp4"
+    for url in asyncio.run(discover(args.url, args.browser)):
+        result = subprocess.run(
+            [
+                "curl",
+                "--disable",
+                "--location",
+                "--fail",
+                "--silent",
+                "--max-time",
+                "180",
+                "--proto",
+                "=https",
+                "--proto-redir",
+                "=https",
+                "--referer",
+                "https://www.douyin.com/",
+                "--max-filesize",
+                str(2 * 1024**3),
+                "--output",
+                str(output),
+                "--write-out",
+                "%{http_code}",
+                "--",
+                url,
+            ],
+            capture_output=True,
+        )
+        if result.returncode == 0:
+            try:
+                probe(output)
+            except (RuntimeError, ValueError, subprocess.TimeoutExpired):
+                output.unlink(missing_ok=True)
+            else:
+                print(json.dumps({"文件": str(output)}, ensure_ascii=False))
+                return
+        else:
+            output.unlink(missing_ok=True)
+        if result.stdout in (b"401", b"403", b"429"):
+            raise RuntimeError("站点限制访问，请使用官方保存入口")
+    raise RuntimeError("公开媒体地址未返回有效视频")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit("已取消下载")
+    except Exception as exc:
+        sys.exit(f"抖音下载失败：{exc}")
