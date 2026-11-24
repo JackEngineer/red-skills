@@ -1,0 +1,56 @@
+name: 打包小红书技能
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    name: 查找技能
+    runs-on: ubuntu-24.04
+    outputs:
+      skills: ${{ steps.skills.outputs.names }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: 读取技能目录
+        id: skills
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from scripts.package_skills import tracked_skills
+
+          names = sorted(tracked_skills())
+          if not names:
+              raise SystemExit("skills/ 下没有纳入 Git 的技能")
+          print(f"names={json.dumps(names)}")
+          PY
+
+  package:
+    name: 打包 ${{ matrix.skill }}
+    needs: discover
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        skill: ${{ fromJSON(needs.discover.outputs.skills) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: 生成小红书 ZIP
+        env:
+          SKILL_NAME: ${{ matrix.skill }}
+        run: python3 scripts/package_skills.py "$SKILL_NAME"
+      - name: 上传原始 ZIP
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.skill }}.zip # v7.0.2 用 name 查找要替换的产物
+          path: dist/${{ matrix.skill }}.zip
+          archive: false
+          if-no-files-found: error
+          overwrite: true

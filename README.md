@@ -16,6 +16,14 @@
 
 ## 打包上传
 
+拿到 ZIP 后，进入小红书创作后台，在原作品的「更新版本」中选择该文件。[小红书 RED Skill 管理页](https://creator.xiaohongshu.com/new/skill-hub)
+
+### 从 GitHub 下载
+
+每次推送到 `main` 后，GitHub Actions 会为每项技能生成一个 ZIP。登录 GitHub，打开最近一次成功的 `main` 构建，在运行详情底部的 **Artifacts（构建产物）** 中选择所需的 `<技能目录名>.zip`。下载的就是可上传小红书的 ZIP。[打包小红书技能工作流](https://github.com/JackEngineer/red-skills/actions/workflows/package-skills.yml?query=branch%3Amain)
+
+### 本地打包
+
 安装 Python 3 和 Git 后，在仓库根目录运行。
 
 ```sh
@@ -26,7 +34,7 @@ python3 scripts/package_skills.py motion-prompt
 python3 scripts/package_skills.py --all
 ```
 
-ZIP 写入 `dist/<技能目录名>.zip`。再次打包会覆盖同名 ZIP。每个包以 `SKILL.md` 为根目录入口，保留技能内的文件结构。从小红书创作后台进入原作品的「更新版本」，选择对应的 ZIP。[小红书 RED Skill 管理页](https://creator.xiaohongshu.com/new/skill-hub)
+ZIP 写入 `dist/<技能目录名>.zip`。再次打包会覆盖同名 ZIP。每个包以 `SKILL.md` 为根目录入口，保留技能内的文件结构。
 
 命令读取工作区中已纳入 Git 的文件，已有文件的修改可以直接打包。新增或删除技能文件后，先登记变动，例如运行 `git add -A -- skills/motion-prompt`，再打包。
 
