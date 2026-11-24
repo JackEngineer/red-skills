@@ -1,0 +1,34 @@
+{
+  "SKILL.md": {
+    "bytes": 2562,
+    "sha256": "a2b1b30aaf8b1de49690f60ead0e611e9267a27c57e0f7397107fbfac8dac72c"
+  },
+  "scripts/download.py": {
+    "bytes": 7487,
+    "sha256": "830c826ea7d5e9a6a8fac37d240d42e7f26ac756ae13221a20f81ceaf4f7efc0"
+  },
+  "scripts/douyin.py": {
+    "bytes": 5511,
+    "sha256": "3e4d7acba7f05b9d8aa1c57efc32db0f5ca06d9027b79aff78ea72490ebd0385"
+  },
+  "scripts/test_download.py": {
+    "bytes": 4494,
+    "sha256": "dc05260da4c2743150c21a654c980cefa42bd3d3a9ed56413401266e7f1a871d"
+  },
+  "references/使用说明.md": {
+    "bytes": 4342,
+    "sha256": "e2450e84dccee7280458ea31a6792538e59b7560252a25a1ed5383ba7d836b41"
+  },
+  "references/抖音与商品页经验.md": {
+    "bytes": 3834,
+    "sha256": "15e1fb0e91c415b6fddea6c59099b1b8f51e11e7ccec3a0c2f19768b416b5566"
+  },
+  "references/requirements.txt": {
+    "bytes": 18,
+    "sha256": "065e0140af2ea589eab15028a7e2478ceafc36d52d38466f979806cdd602c464"
+  },
+  "references/验证报告.md": {
+    "bytes": 2150,
+    "sha256": "25c6460fa2917631f39c9e975e24f33701109dd2e0c5b794eaba1cc1ebc9c159"
+  }
+}
