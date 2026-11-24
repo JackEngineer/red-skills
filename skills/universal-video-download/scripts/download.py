@@ -101,8 +101,13 @@ def download_generic(url, stage):
     ]
     result = subprocess.run(command, capture_output=True, text=True, timeout=900)
     if result.returncode:
-        message = (result.stderr or result.stdout).strip()[-1200:]
-        raise RuntimeError("网站提取或下载失败（原始诊断）：" + message)
+        message = (result.stderr or result.stdout).strip()
+        if "[XiaoHongShu]" in message and "No video formats found" in message:
+            raise RuntimeError(
+                "小红书没有返回可下载的视频。请从原笔记重新复制完整分享链接，"
+                "保留链接参数，并确认笔记可访问且包含视频。"
+            )
+        raise RuntimeError("网站提取或下载失败（原始诊断）：" + message[-1200:])
     for line in reversed(result.stdout.splitlines()):
         path = Path(line.strip()).resolve()
         if path.is_file() and stage.resolve() in path.parents:

@@ -25,6 +25,8 @@ python -m playwright install chromium
 
 在技能目录运行。可把分享文字、多个链接和现有文件路径作为单独参数传入。
 
+下载小红书视频时，从原笔记的「分享」复制完整链接，或复制浏览器里的完整地址。保留链接中的查询参数。小红书提示没有可下载的视频时，重新复制分享链接，并确认笔记仍可访问且包含视频。
+
 ```sh
 python scripts/download.py --name "视频" -- "复制来的完整分享文字"
 python scripts/download.py --output-dir "./视频输出" -- "链接一" "链接二"
