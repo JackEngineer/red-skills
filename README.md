@@ -20,6 +20,8 @@
 
 拿到 ZIP 后，在小红书创作后台创建作品，或进入原作品的「更新版本」上传。[小红书 RED Skill 管理页](https://creator.xiaohongshu.com/new/skill-hub)
 
+让 Codex 代办小红书发布时，提供技能名、目录绝对路径或 ZIP 文件绝对路径。审核提交前会展示确认卡，等待你的明确确认。[SkillHub 生产发布流程](docs/skillhub-release.md)
+
 ### 免登录下载
 
 从 GitHub Release 下载最新发布的 ZIP。
@@ -50,7 +52,7 @@ ZIP 写入 `dist/<技能目录名>.zip`。再次打包会覆盖同名 ZIP。每�
 
 遇到不支持的格式、符号链接或超出体积限制的文件时，命令会指出问题。小红书限制单个文件最多 10 MiB，每项技能解压后合计最多 30 MiB。
 
-### 发布新版
+### 发布 GitHub Release
 
 在要发布的 `main` 提交上创建一个新的 `skills-*` 标签，并单独推送该标签。
 

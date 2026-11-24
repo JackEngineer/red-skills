@@ -17,3 +17,4 @@
 - 一次提交只处理一个目的。提交标题用中文 Conventional Commits，例如 `docs(xhs-minitool-guide): 更新定位接口的版本说明`。
 - 公开提交前检查暂存区。上传包、后台截图、授权信息、测试日志和个人配置留在 Git 仓库之外。
 - 小红书版本更新沿用 README 记录的原作品。只有得到当次发布授权才上传和送审。
+- 收到小红书 SkillHub 发布任务时，按[生产发布流程](docs/skillhub-release.md)加载 `redskillhub-upload`。先确定本地技能，展示完整确认卡后，等用户明确回复“确认”“提交”或 `submit` 再提交。
