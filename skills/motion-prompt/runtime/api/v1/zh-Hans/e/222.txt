@@ -1,0 +1,61 @@
+// Motion Prompt #222 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#222
+//
+// 流程图 / 英文名：Flowchart
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 06 · 类别：整理思路的图
+// 示例内容：开始 → 步骤 → 菱形判断 → 步骤 → 结束依次排成一行，判断节点以回路箭头连回第一个步骤；随后圆点沿路径前进，回退一次后继续到结束。
+// 动效规格：
+//   - 形状：开始和结束为 66×36 px 的灰色胶囊形，步骤为 72×40 px 的浅蓝色方框，判断为宽 92 px、高 72 px 的蓝色菱形，内有白色“?”；均排在 y = 80 的一行上
+//   - 顺序：在 0.4、0.8、1.2、1.6 和 1.95 s 弹性出现（各 0.3 s，ease-out-back）；节点间箭头分别从 0.6、1.0、1.4 和 1.75 s 开始，用 0.22 s 延伸，箭头头部 10 px
+//   - 回路：从菱形底部向下到 y = 172，再向上连入第一个步骤的箭头，在 2.0 s 至 2.45 s 绘出
+//   - 标记：深灰色圆点（半径 8 px）在 2.6 s 至 3.8 s 沿开始 → 步骤 → 判断 → 回路 → 步骤 → 判断 → 步骤 → 结束前进（cubic ease-in-out），在 2.5–2.65 s 出现，在 3.8–4.0 s 离场
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合逐步展示流程，包括根据条件分支的位置。
+// 标签：流程图、流程图、流程、决策、菱形、步骤、操作流程、是／否分支
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#222
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 06
+function flow(k, w, h, u) {
+  bg(k, w, h);
+  k.globalAlpha = fade(u);
+  const y = 80, S = [64, y], A = [158, y], D = [262, y], B = [364, y], E = [460, y], LY = 172;
+  const dw = 46, dh = 36;
+  const arrows = [
+    [[S[0] + 34, y], [A[0] - 36, y]],
+    [[A[0] + 36, y], [D[0] - dw, y]],
+    [[D[0] + dw, y], [B[0] - 36, y]],
+    [[B[0] + 36, y], [E[0] - 34, y]],
+  ];
+  const loop = [[D[0], y + dh], [D[0], LY], [A[0], LY], [A[0], y + 20]];
+  const tA = [0.6, 1.0, 1.4, 1.75];
+  pen(k, C.g4, 3);
+  arrows.forEach((pts, i) => trace(k, pts, easeInOut(P(u, tA[i], tA[i] + 0.22)), 10, C.g4));
+  trace(k, loop, easeInOut(P(u, 2.0, 2.45)), 10, C.g4);
+  const pill = (c, s, col) => box(k, c[0], c[1], 66, 36, 18, s, col);
+  pill(S, pop(u, 0.4), C.g3);
+  box(k, A[0], A[1], 72, 40, 6, pop(u, 0.8), C.blueL);
+  const ds = pop(u, 1.2);
+  if (ds > 0.01) {
+    k.save(); k.translate(D[0], D[1]); k.scale(ds, ds); k.fillStyle = C.blue;
+    k.beginPath(); k.moveTo(0, -dh); k.lineTo(dw, 0); k.lineTo(0, dh); k.lineTo(-dw, 0); k.closePath(); k.fill();
+    txt(k, '?', 0, 2, `700 26px ${FONT}`, '#FFFFFF', 'center', 'middle');
+    k.restore();
+  }
+  box(k, B[0], B[1], 72, 40, 6, pop(u, 1.6), C.blueL);
+  pill(E, pop(u, 1.95), C.g3);
+  // 播放标记从起点到达 A 和 D，沿否定分支回到 A，再经 D 的肯定分支、B 到终点。
+  const path = [S, A, D, [D[0], LY], [A[0], LY], A, D, B, E];
+  const m = P(u, 2.6, 3.8);
+  const a = Math.min(P(u, 2.5, 2.65), 1 - P(u, 3.8, 4.0));
+  if (a > 0) {
+    const q = along(path, easeInOut(m) * pathLen(path));
+    k.save(); k.globalAlpha *= a; k.fillStyle = C.mark; k.beginPath(); k.arc(q.x, q.y, 8, 0, TAU); k.fill(); k.restore();
+  }
+  k.globalAlpha = 1;
+}
+CELLS[5] = flow;

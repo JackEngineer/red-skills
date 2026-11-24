@@ -1,0 +1,22 @@
+// Motion Prompt #199 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#199
+//
+// 麻胶版画 / 英文名：Linocut print
+// 素材包：artstyle (图像生成常用的画风名称) · 元素 07 · 类别：绘画与版画
+// 示例内容：同一张线稿变成雕版印制的黑白版画，仅由粗犷线条和形状构成，没有灰色或模糊。
+// 动效规格：
+//   - 媒介：雕刻油毡板后印制
+//   - 外观：纯黑白的粗犷线条，保留雕刻留下的粗糙痕迹
+//   - 避免：灰色、模糊和渐变
+//   - 示例：将同一张基础草图（山丘上的房屋、树和太阳的线稿）作为参考交给图像模型，按此风格重绘。0.5 s 至 1.35 s，以斜向擦除从草图切换为该风格；画面缓慢放大至 1.045x，持续到 4.0 s；4.0 s 至 4.5 s 淡回草图（单次循环 = 4.7 s，cubic ease-in-out）
+// 适用场景：适合需要强烈黑白效果的海报、T 恤或标志。
+// 标签：麻胶版画、版画印刷、黑白、版画制作、雕刻、木刻版画
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 artstyle -> ../../kit/artstyle.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#199
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 07
+CELLS[6] = (k, w, h, u) => gafu(k, w, h, u, '07');

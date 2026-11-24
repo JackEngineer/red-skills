@@ -1,0 +1,27 @@
+// Motion Prompt #174 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#174
+//
+// 背后跟拍 / 英文名：Follow shot
+// 素材包：camera2 (镜头运动与转场（第 2 弹）) · 元素 06 · 类别：镜头运动
+// 示例内容：相机沿同一路径，在几米后方跟随曲线行走的人物；从背后看人物，人物始终靠近画面中央。
+// 动效规格：
+//   - 路径：人物沿 x = 1.8·sin(2.2s)、纵深 z = 4 + 9s 的曲线行走（s 从 0 到 1），从距离 4 m 走到 13 m。
+//   - 相机：沿相同曲线在 s-0.4 处跟随（约落后 3.6–3.9 m），始终朝向人物，yaw = atan2(person x - camera x, person z - camera z)；高度 1.5 m。
+//   - 时间：0.3 s 至 4.2 s（3.9 s），三次缓入缓出（约为 cubic-bezier(0.65,0,0.35,1)）；腿和手臂按 sin(s×30)×0.42 rad 摆动。
+//   - 从背后看人物，人物保持在画面中央附近；路径旁的柱子和岩石在前景掠过（#029 跟拍是并排行进）。
+//   - 返回：最后 0.5 s 交叉淡化回起点（单次 = 4.7 s）；右上角读数显示与人物的距离（跟拍 3.6–3.9m）。
+// 适用场景：适合与角色一起进入某处，或营造类似游戏的第三人称视角。
+// 标签：跟拍镜头、跟拍、从背后拍摄、第三人称视角、轨迹、行走、运镜
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera2 -> ../../kit/camera2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#174
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 06
+CELLS[5] = shot(camCell((k, w, h, p) => {
+  const path = s => [1.8 * Math.sin(s * 2.2), 4 + s * 9];
+  const [px, pz] = path(p), [cx, cz] = path(p - 0.4);
+  world(k, w, h, cam({ x: cx, z: cz, y: 1.5, yaw: Math.atan2(px - cx, pz - cz) }), { person: { x: px, z: pz, walk: p * 30 }, fg: [[-2.4, 7], [2.6, 9.5, 'rock'], [-1.5, 12]] });
+}, p => `跟拍 ${Math.hypot(1.8 * Math.sin(p * 2.2) - 1.8 * Math.sin((p - 0.4) * 2.2), 3.6).toFixed(1)}m`, 0.3, 4.2));

@@ -1,0 +1,22 @@
+// Motion Prompt #205 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#205
+//
+// Risograph 孔版印刷 / 英文名：Risograph print
+// 素材包：artstyle (图像生成常用的画风名称) · 元素 13 · 类别：平面设计风格
+// 示例内容：同一张线稿变成黄色和蓝绿色两色油墨的印刷品；两层油墨略有套印错位，油墨颗粒和纸张纹理清晰可见。
+// 动效规格：
+//   - 媒介：使用两种或三种油墨的孔版印刷（Risograph）
+//   - 外观：突出各层之间的套印错位、油墨颗粒和纸张纹理；示例使用黄色和蓝绿色
+//   - 注意：两种颜色平滑混合会看起来像双色调（#116）；应保留错位和颗粒
+//   - 示例：将同一张基础草图（山丘上的房屋、树和太阳的线稿）作为参考交给图像模型，按此风格重绘。0.5 s 至 1.35 s，以斜向擦除从草图切换为该风格；画面缓慢放大至 1.045x，持续到 4.0 s；4.0 s 至 4.5 s 淡回草图（单次循环 = 4.7 s，cubic ease-in-out）
+// 适用场景：适合独立小刊、传单和独立海报的质感。
+// 标签：理想孔版速印、理想孔版速印、印刷、套印错位、颗粒、独立小刊
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 artstyle -> ../../kit/artstyle.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#205
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 13
+CELLS[12] = (k, w, h, u) => gafu(k, w, h, u, '13');

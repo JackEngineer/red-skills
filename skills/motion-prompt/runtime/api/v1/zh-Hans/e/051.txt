@@ -1,0 +1,39 @@
+// Motion Prompt #051 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#051
+//
+// 底部面板 / 英文名：Bottom sheet
+// 素材包：ui (UI 组件) · 元素 03 · 类别：浮层与展开
+// 示例内容：手指轻点“查看详情”，面板从底部升起；向下拖动把手即可关闭。
+// 动效规格：
+//   - 542×191 卡片，循环周期 4.5 s。手指（半透明圆，半径 17，白色边缘）在 1.0 s 轻点“查看详情”胶囊按钮（170×36，底部中央）。
+//   - 展开量：1.05–1.45 s 以 easeOutCubic 从 0→1。整卡遮罩为 rgba(18,20,28)，不透明度 0.36·a。
+//   - 面板：白色，高 136，顶部圆角 18，上边缘 y = 191 − 136·a。阴影模糊 22，y 偏移 −4。顶部中央有 52×6 拖动把手。
+//   - 内部包含粗体标题栏和两行带 26×26 图标的内容。
+//   - 关闭：手指在 2.75 s 落到把手 (271, 68)，在 3.0–3.6 s 向下拖动；a 乘以 (1 − easeInOutCubic，作用于 3.0–3.6 s)，面板随手指移出底部。
+// 适用场景：适合在移动端展示详情或选项，同时保留当前屏幕的上下文。
+// 标签：底部面板、浮层面板、模态面板、移动端、向上滑入、拖动关闭、面板
+// 尺寸：542x191 px · 循环时长：4.5 秒
+// 依赖：共用辅助代码 ui -> ../../kit/ui.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#051
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 03
+CELLS[2] = ui((w, h, t) => {
+  pageLines(24, 16, 494); fillRR(24, 76, 239, 54, 8, C.block); fillRR(279, 76, 239, 54, 8, C.block);
+  fillRR(186, 144, 170, 36, 18, C.blue); text('查看详情', 271, 162, 15, '#fff', 600, 'center');
+  const open = eo(seg(t, 1.05, 1.45));
+  const drag = eio(seg(t, 3.0, 3.6));
+  const a = open * (1 - drag);
+  if (open > 0 && a > 0.001) {
+    X.fillStyle = `rgba(18,20,28,${.36 * a})`; X.fillRect(0, 0, w, h);
+    const sh = 136, sy = h - sh * a;
+    shadowed(() => { rr(0, sy, w, sh + 20, 18); X.fillStyle = '#fff'; X.fill(); }, 22, -4, .2);
+    fillRR(w / 2 - 26, sy + 10, 52, 6, 3, C.line2);
+    bar(28, sy + 30, 160, C.ink, 11);
+    for (let i = 0; i < 2; i++) { const y = sy + 56 + i * 36; fillRR(28, y, 26, 26, 6, i ? C.mb : C.blue); bar(66, y + 4, 220, C.line); bar(66, y + 17, 140, C.line, 7); }
+  }
+  const sy = h - 136 * a;
+  finger([[.3, 271, 162], [1.6, 271, 162], [2.75, w / 2, h - 136 + 13], [3.0, w / 2, h - 136 + 13], [3.6, w / 2, h + 10]], [1.0, 3.0], t, (t > .6 && t < 1.6) || (t > 2.75 && t < 3.6));
+});

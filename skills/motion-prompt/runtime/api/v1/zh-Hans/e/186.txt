@@ -1,0 +1,37 @@
+// Motion Prompt #186 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#186
+//
+// 变形剪切 / 英文名：Morph cut
+// 素材包：camera2 (镜头运动与转场（第 2 弹）) · 元素 18 · 类别：转场与剪辑
+// 示例内容：同一人物的两次拍摄通过位置和姿势的平滑插值连接，不会像跳切那样产生突变。
+// 动效规格：
+//   - 拍摄 1（0–2.0 s）：相机固定（高度 1.45 m）；人物位于左侧 0.4 m、距离 3.3 m，手臂和腿角度为 -0.45 rad。拍摄 2（从 2.45 s 起）：右侧 0.35 m，+0.55 rad。两者都按 0.12·sin(t×3) rad 轻微摆动。
+//   - 形变（2.0–2.45 s，0.45 s）：位置采用二次缓入缓出插值（约为 cubic-bezier(0.45,0,0.55,1)），两种姿势绘制在相同的插值位置并交叉淡化。
+//   - 仅在形变期间，整幅画面应用 sin(q×π)×2.2 px 的模糊以柔化衔接（#041 跳切允许位置突变）。
+//   - 底部条带：拍摄 1（灰色）、形变（蓝色窄段）、拍摄 2（灰色），带播放头。
+//   - 返回：最后 0.5 s 交叉淡化回拍摄 1 的起点；右上角读数为“拍摄 1” → “变形” → “拍摄 2”。
+// 适用场景：适合精简访谈或旁白，或在不引人注意的情况下去掉口误。
+// 标签：变形剪辑、变形、无缝衔接、采访、人物口播、剪辑、转场
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera2 -> ../../kit/camera2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#186
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 18
+CELLS[17] = shot((k, w, h, u) => {
+  const T0 = 2.0, T1 = 2.45, r = P(u, CYC - RESET, CYC);
+  const draw = (kk, t) => {
+    const q = eIOs(P(t, T0, T1));
+    // 在插值得到的同一位置叠加两种姿势，同时改变它们的不透明度。
+    const pose = (k2, m) => world(k2, w, h, cam({ y: 1.45, z: 0 }), { person: { x: lerp(-0.4, 0.35, q), z: 3.3, walk: (m ? 0.55 : -0.45) + 0.12 * Math.sin(t * 3) }, trees: true, buildings: true });
+    const bl = Math.sin(q * Math.PI) * 2.2;
+    kk.save(); kk.filter = bl > 0.05 ? `blur(${bl.toFixed(2)}px)` : 'none';
+    blend(kk, k2 => pose(k2, false), k2 => pose(k2, true), q);
+    kk.restore();
+    strip(kk, w, h, [[0, T0, '镜次 1', C.g2], [T0, T1, '', C.blue], [T1, CYC, '镜次 2', C.g2]], t);
+  };
+  blend(k, kk => draw(kk, u), kk => draw(kk, 0), eIOs(r));
+  return r > .5 || u < T0 ? '拍摄 1' : u < T1 ? '变形' : '拍摄 2';
+});

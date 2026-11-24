@@ -1,0 +1,46 @@
+// Motion Prompt #150 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#150
+//
+// 滚动监听 / 英文名：Scrollspy
+// 素材包：lp2 (落地页与网页效果（第 2 弹）) · 元素 06 · 类别：滚动效果
+// 示例内容：文章滚动时，目录中当前阅读章节的项目高亮；下一个标题进入后，高亮随之切换。
+// 动效规格：
+//   - 视口 511 × 168：左侧目录宽 150 px、4 个项目，右侧文章的标题相隔 100 px。滚动：0.3–0.9 s 从 0→100，1.35–1.95 s →200，2.4–3.0 s →300，3.5–4.4 s 从 300→0（三次方缓入缓出）。一次演示 4.7 s，每个 9.4 s 素材包周期内重复两次。
+//   - 当前项目 = 顶边位于 scroll + 40 px 以上的最后一个标题（触发线距视口顶部 40 px）。
+//   - 当前项目变化时，在 0.25 s 内（三次方缓出）增加浅橙背景（126 × 26，圆角 6）和左侧橙条（宽 4），文字从灰色变为橙色粗体；前一个项目也在同样的 0.25 s 内恢复。
+//   - 目录保持固定，只有文章滚动。滚动条滑块随滚动移动。
+// 适用场景：适合长文章、文档或常见问题，标明读者在整页中的位置。
+// 标签：滚动监听、内容目录、目录、导航、激活状态、滚动
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 lp2 -> ../../kit/lp2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#150
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 06
+CELLS[5] = (k, w, h, u) => {
+  u = snapU(u);
+  frame(k);
+  const y = steps([[0.3, 0], [0.9, 100], [1.35, 100], [1.95, 200], [2.4, 200], [3.0, 300], [3.5, 300], [4.4, 0]], u);
+  const NAMES = ['开始之前', '使用方法', '价格', '常见问题'], TX = 160;
+  const act = t => { const yy = steps([[0.3, 0], [0.9, 100], [1.35, 100], [1.95, 200], [2.4, 200], [3.0, 300], [3.5, 300], [4.4, 0]], t); let a = 0; for (let i = 0; i < 4; i++) if (i * 100 <= yy + 40) a = i; return a; };
+  view(k, () => {
+    k.save(); k.beginPath(); k.rect(TX - 10, 0, VW, VH); k.clip(); k.translate(0, -y);
+    NAMES.forEach((s, i) => {
+      const y0 = i * 100 + 14;
+      txt(k, `${i + 1}. ${s}`, TX + 14, y0 + 22, `800 16px ${JP}`, C.ink);
+      bars(k, TX + 14, y0 + 38, 300, 3, C.faint, 6, 12, 0.6);
+    });
+    k.restore();
+    k.fillStyle = C.soft; k.fillRect(0, 0, TX - 10, VH);
+    txt(k, '目录', 20, 30, `800 12px ${JP}`, C.sub);
+    const a = act(u);
+    NAMES.forEach((s, i) => {
+      const q = trans(t => act(t) === i, u, 0.25), iy = 54 + i * 30;
+      if (q > 0) { k.fillStyle = `rgba(255,229,219,${q})`; rr(k, 12, iy - 13, TX - 34, 26, 6); k.fill(); k.fillStyle = C.acc; k.globalAlpha = q; rr(k, 12, iy - 13, 4, 26, 2); k.fill(); k.globalAlpha = 1; }
+      txt(k, s, 26, iy + 1, `${a === i ? 800 : 600} 13px ${JP}`, mix('#7D879B', C.acc, q), 'left', 'middle');
+    });
+    sbar(k, y / 300, 0.36);
+  });
+};

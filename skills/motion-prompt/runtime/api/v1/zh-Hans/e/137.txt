@@ -1,0 +1,31 @@
+// Motion Prompt #137 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#137
+//
+// 推入转场 / 英文名：Push transition
+// 素材包：motion2 (动态图形（第 2 弹）) · 元素 17 · 类别：转场与强调
+// 示例内容：下一个场景从侧面滑入，同时将当前场景推出画面。
+// 动效规格：
+//   - 海景 → 山景 → 海景，每段 2.35 s。每半段的切换在 0.45–1.6 s 进行，历时 1.15 s，三次方缓入缓出。
+//   - 两个场景保持相接，一起移动整个画面宽度 539 px，不重叠、不淡化。
+//   - 方向：海景→山景向左移动，下一场景从右侧进入；山景→海景向右移动。
+//   - 场景接缝以宽 6 的藏青色线标记。
+// 适用场景：适合连续浏览幻灯片、照片或步骤，让切换有连贯向前的感觉。
+// 标签：推入、推入转场、滑动、转场、场景切换、轮播
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion2 -> ../../kit/motion2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#137
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 17
+const SC17 = [scSea, scMtn];
+CELLS[16] = abCell((k, w, h, u, a, b) => {
+  const p = eIO(P(u, TA - 0.05, TB + 0.1)), dir = a === 0 ? -1 : 1;
+  if (p <= 0) return SC17[a](k, w, h);
+  if (p >= 1) return SC17[b](k, w, h);
+  k.save(); k.translate(dir * p * w, 0); SC17[a](k, w, h); k.restore();
+  k.save(); k.translate(dir * (p - 1) * w, 0); SC17[b](k, w, h); k.restore();
+  const ex = dir < 0 ? w * (1 - p) : w * p;
+  k.fillStyle = C.navy; k.fillRect(ex - 3, 0, 6, h);
+});

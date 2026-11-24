@@ -1,0 +1,30 @@
+// Motion Prompt #119 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#119
+//
+// 漏光 / 英文名：Light leak
+// 素材包：photo (摄影效果、光线与风格) · 元素 23 · 类别：色调与后期风格
+// 示例内容：同一片风景的右边缘渗入一条漏光带，内侧为浅黄色，边缘为红色，缓慢摇摆。
+// 动效规格：
+//   - 场景 3：左侧为半身像（头部中心 x 140、y 82，半径 28 px），右侧有山丘、房屋、树木和太阳（x 432、y 54，半径 15 px）。
+//   - 形状：四个高椭圆，中心位于画面右边缘外 30 px（循环中摇摆 ±6 px），纵向半径为画面高度的 1.1×。
+//   - 横向半径及颜色：250 px #FFD089、不透明度 35%，170 px #FF9A3D、40%，95 px #FF5A3A、45%，45 px #FF3B30、50%（各自从 0 增长到此半径）。
+//   - 时间：效果在 0.4 s 至 1.4 s 之间显现，保持至 4.0 s，并在 4.8 s 前消失（单次 = 5 s，三次缓入缓出，约为 cubic-bezier(0.65,0,0.35,1)）。
+// 适用场景：适合怀旧、夏日、带有偶然感的回忆画面。
+// 标签：漏光、胶片漏光、怀旧风格、胶片质感、洛莫风格、暖色光晕
+// 尺寸：539x208 px · 循环时长：5 秒
+// 依赖：共用辅助代码 photo -> ../../kit/photo.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#119
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 23
+CELLS[22] = cell((k, u) => {
+  const a = env(u), w = Math.sin(u / CYC * TAU);
+  stageLand(k, BASE);
+  k.save();
+  // 将纵向拉长的椭圆叠加到画面右侧，圆心位于边缘外。内侧偏红，外围呈淡黄色。
+  const band = (rx, col, al) => { k.globalAlpha = al * a; k.fillStyle = col; k.beginPath(); k.ellipse(CW + 30 + 6 * w, CH / 2, rx * a, CH * 1.1, 0, 0, TAU); k.fill(); };
+  band(250, '#FFD089', 0.35); band(170, '#FF9A3D', 0.4); band(95, '#FF5A3A', 0.45); band(45, '#FF3B30', 0.5);
+  k.restore();
+});

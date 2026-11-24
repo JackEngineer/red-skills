@@ -1,0 +1,40 @@
+// Motion Prompt #021 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#021
+//
+// 翻转 / 英文名：Flip
+// 素材包：motion (动态图形) · 元素 21 · 类别：转场与强调
+// 示例内容：卡片绕竖轴翻转，露出另一面。
+// 动效规格：
+//   - 卡片尺寸 300 × 156，圆角半径 22。正面（蓝色，Q）⇄ 背面（黄色，A），每段 2.35 s。
+//   - 在 0.45–1.5 s（1.05 s）内使用 backOut (s = 1.5) 旋转 180°，略微超过 180° 后回弹。
+//   - 卡片宽度 = 原始宽度 × |cos θ|，通过 90° 时切换正反面图案。
+//   - 透视：以细竖条绘制卡片，各条高度从一侧到另一侧最多变化 ±20% × sin θ，远侧较短、近侧较高。
+//   - 翻转中沿正弦曲线放大 8%、抬高 6 px；不透明度为 0.34 × |sin θ| 的深色蒙层给表面加阴影，地面另有椭圆阴影。
+// 适用场景：适合展示互为两面的内容，例如问题与答案、前后对比。
+// 标签：翻转、卡片、三维、旋转、翻转、显现、问答
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion -> ../../kit/motion.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#021
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 21
+const FW = 300, FH = 156, FC = mkCanvas(FW, FH), FK = FC.getContext('2d');
+function flipFace(i) {
+  FK.setTransform(1, 0, 0, 1, 0, 0); FK.clearRect(0, 0, FW, FH);
+  FK.fillStyle = i ? C.yel : C.blue; rr(FK, 0, 0, FW, FH, 22); FK.fill();
+  FK.strokeStyle = i ? 'rgba(15,26,61,.18)' : 'rgba(255,255,255,.3)'; FK.lineWidth = 4; rr(FK, 12, 12, FW - 24, FH - 24, 13); FK.stroke();
+  txt(FK, i ? '答' : '问', 92, FH / 2 + 4, `800 112px ${JP}`, i ? C.navy : '#fff', 'center', 'middle');
+  FK.fillStyle = i ? C.navy : '#fff'; FK.globalAlpha = i ? 0.85 : 0.9; rr(FK, 164, 50, 100, 14, 7); FK.fill(); FK.globalAlpha = i ? 0.4 : 0.5; rr(FK, 164, 76, 76, 12, 6); FK.fill(); rr(FK, 164, 98, 90, 12, 6); FK.fill(); FK.globalAlpha = 1;
+}
+CELLS[20] = abCell((k, w, h, u, a, b) => {
+  stage(k);
+  const pr = P(u, TA - 0.05, TB), th = Math.PI * backOut(pr, 1.5), c = Math.cos(th), s = Math.sin(th), front = c >= 0;
+  flipFace(front ? a : b);
+  const X = w / 2, Y = h / 2 - 2, lift = Math.sin(Math.PI * pr), sc = 1 + 0.08 * lift, ww = FW * Math.abs(c) * sc, per = 0.2 * s * (front ? 1 : -1);
+  k.fillStyle = 'rgba(0,0,0,.3)'; k.beginPath(); k.ellipse(X, h - 13, Math.max(8, ww / 2 * 0.9), 6, 0, 0, 7); k.fill();
+  const STEP = 2;
+  for (let sx = 0; sx < FW; sx += STEP) { const f = sx / FW, dx = X - ww / 2 + f * ww, hh = FH * sc * (1 + per * (f - 0.5) * 2); k.drawImage(FC, sx, 0, STEP, FH, dx, Y - hh / 2 - 6 * lift, ww / FW * STEP + 0.6, hh); }
+  if (Math.abs(s) > 0.02) { k.fillStyle = `rgba(8,14,40,${0.34 * Math.abs(s)})`; k.beginPath(); const hl = FH * sc * (1 - per), hr = FH * sc * (1 + per), yy = Y - 6 * lift; k.moveTo(X - ww / 2, yy - hl / 2); k.lineTo(X + ww / 2, yy - hr / 2); k.lineTo(X + ww / 2, yy + hr / 2); k.lineTo(X - ww / 2, yy + hl / 2); k.closePath(); k.fill(); }
+});

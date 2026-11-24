@@ -1,0 +1,52 @@
+// Motion Prompt #218 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#218
+//
+// 四象限矩阵（2×2） / 英文名：2x2 matrix
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 02 · 类别：整理思路的图
+// 示例内容：两条坐标轴从中心向外延伸，四个区域出现并放入圆点；只有右上区域及其中的圆点为蓝色。
+// 动效规格：
+//   - 坐标轴：0.4 s 至 1.0 s 从中心向外延伸（左右各 168 px，上下各 86 px，cubic ease-in-out），右端和上端带箭头
+//   - 区域：四个 154×78 px、圆角 10 px 的方框，距坐标轴 8 px；从 1.0 s 开始，以右上、左上、左下、右下的顺序依次淡入，间隔 0.08 s，每个耗时 0.35 s。右上为浅蓝，其余为浅灰
+//   - 圆点：七个圆点从 1.45 s 开始，间隔 0.1 s，各用 0.3 s 弹性出现（ease-out-back，略有超调）；右上圆点为蓝色（半径 12 px），其余为灰色（半径 8 px）
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合按两个标准对选项分类，并指出应争取的目标位置（右上角）。
+// 标签：2×2 矩阵、象限、四象限、优先级排序、定位、坐标轴、策略
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#218
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 02
+const MDOTS = [[0.55, -0.55, 1], [0.25, -0.3, 0], [-0.5, -0.45, 0], [-0.3, 0.5, 0], [-0.62, 0.22, 0], [0.45, 0.4, 0], [0.7, 0.62, 0]];
+function matrix(k, w, h, u) {
+  bg(k, w, h);
+  k.globalAlpha = fade(u);
+  const cx = w / 2, cy = h / 2, hw = 168, hh = 86, gap = 8;
+  [[1, -1], [-1, -1], [-1, 1], [1, 1]].forEach(([sx, sy], i) => {
+    const a = easeOut(P(u, 1.0 + i * 0.08, 1.35 + i * 0.08));
+    if (a <= 0) return;
+    k.save(); k.globalAlpha *= a;
+    k.fillStyle = i === 0 ? C.blueL : C.g2;
+    const x = sx > 0 ? cx + gap : cx - gap - (hw - 14), y = sy > 0 ? cy + gap : cy - gap - (hh - 8);
+    rr(k, x, y, hw - 14, hh - 8, 10); k.fill(); k.restore();
+  });
+  const g = easeInOut(P(u, 0.4, 1.0));
+  if (g > 0) {
+    pen(k, C.mark, 3);
+    k.beginPath(); k.moveTo(cx - hw * g, cy); k.lineTo(cx + (hw - 6) * g, cy); k.stroke();
+    k.beginPath(); k.moveTo(cx, cy + hh * g); k.lineTo(cx, cy - (hh - 6) * g); k.stroke();
+    const hs = 11 * clamp((g - 0.15) * 3);
+    if (hs > 1) { arrowAt(k, cx + hw * g + 2, cy, 0, hs, C.mark); arrowAt(k, cx, cy - hh * g - 2, -Math.PI / 2, hs, C.mark); }
+  }
+  MDOTS.forEach(([dx, dy, hot], i) => {
+    const s = pop(u, 1.45 + i * 0.1, 0.3);
+    if (s <= 0) return;
+    const x = cx + dx * (hw - 20), y = cy + dy * (hh - 6), r = hot ? 12 : 8;
+    k.fillStyle = hot ? C.blue : C.g4;
+    k.beginPath(); k.arc(x, y, r * s, 0, TAU); k.fill();
+  });
+  k.globalAlpha = 1;
+}
+CELLS[1] = matrix;

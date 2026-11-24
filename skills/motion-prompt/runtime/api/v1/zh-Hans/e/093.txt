@@ -1,0 +1,47 @@
+// Motion Prompt #093 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#093
+//
+// 平滑滚动 / 英文名：Smooth scroll
+// 素材包：lp (落地页与网页效果) · 元素 21 · 类别：加载、导航与循环动效
+// 示例内容：点击菜单“价格”，页面平滑下滑至价格区块；点击右下角向上箭头，页面平滑返回顶部。
+// 动效规格：
+//   - 0.9 s 点击“价格”菜单项；在 0.95–2.0 s（1.05 s）滚动量从 0→296 px（三次方缓入缓出）。
+//   - 停止位置 = 价格区块顶边（330 px）− 固定页头高度（34 px）。
+//   - 滚动超过 60 px 后，在随后的 40 px 内，右下角圆形返回顶部按钮（半径 15）淡入。
+//   - 3.1 s 点击该按钮；在 3.15–4.2 s 滚动量从 296→0（三次方缓入缓出）。
+//   - 价格区块位于视口内时，菜单中的“价格”变为橙色。
+// 适用场景：适合菜单或目录在同一页内跳转，让读者看清移动方向和目标位置。
+// 标签：平滑滚动、滚动行为、锚点链接、页内链接、返回顶部、导航
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#093
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 21
+CELLS[20] = (k, w, h, u) => {
+  frame(k);
+  const TO = 296;   // 目标位置为价格区块顶部（330）减去页眉高度（34）。
+  const y = TO * eIO(P(u, 0.95, 2.0)) * (1 - eIO(P(u, 3.15, 4.2)));
+  const [cx, cy] = path([[0, 380, 132], [0.75, 360, 18], [1.0, 360, 18], [2.9, 478, 140], [3.25, 478, 140], [4.8, 380, 132]], u);
+  view(k, () => {
+    k.save(); k.translate(0, -y);
+    pic(k, 24, 46, 222, 110, 0, 8); txt(k, '找到顺手的工具。', 264, 84, `800 19px ${JP}`, C.ink); bars(k, 264, 98, 210, 3);
+    k.fillStyle = C.soft; k.fillRect(0, 170, VW, 160);
+    txt(k, '特色', VW / 2, 206, `800 17px ${JP}`, C.ink, 'center');
+    for (let i = 0; i < 3; i++) { const x = 100 + i * 155; k.fillStyle = C.blueL; k.beginPath(); k.arc(x, 252, 24, 0, 7); k.fill(); bars(k, x - 46, 288, 92, 2); }
+    txt(k, '价格', VW / 2, 370, `800 17px ${JP}`, C.ink, 'center');
+    ['¥0', '¥980', '¥2,980'].forEach((s, i) => {
+      const x = 50 + i * 143, hi = i === 1; k.fillStyle = '#fff'; rr(k, x, 388, 125, 96, 8); k.fill();
+      k.lineWidth = hi ? 2.5 : 1.5; k.strokeStyle = hi ? C.acc : C.faint; k.stroke();
+      txt(k, s, x + 62.5, 428, `800 20px ${EN}`, hi ? C.acc : C.ink, 'center'); bars(k, x + 22, 444, 81, 2);
+    });
+    k.restore();
+    header(k, 0, y > 250 ? 1 : -1);
+    const tb = clamp((y - 60) / 40);
+    if (tb > 0) { k.globalAlpha = tb; k.fillStyle = C.ink; k.beginPath(); k.arc(478, 140, 15, 0, 7); k.fill(); k.strokeStyle = '#fff'; k.lineWidth = 2.4; k.lineCap = 'round'; k.lineJoin = 'round'; k.beginPath(); k.moveTo(472, 143); k.lineTo(478, 136.5); k.lineTo(484, 143); k.stroke(); k.globalAlpha = 1; }
+    sbar(k, y / TO * 0.7, 0.36);
+    click(k, cx, cy, u, [0.9, 3.1]);
+  });
+};

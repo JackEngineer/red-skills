@@ -1,0 +1,50 @@
+// Motion Prompt #235 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#235
+//
+// 漏斗图 / 英文名：Funnel chart
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 19 · 类别：展示流程与全局的图
+// 示例内容：四条居中的条形从上到下依次由中心向两侧伸展，每条比上一条更短，以浅灰色梯形衔接。
+// 动效规格：
+//   - 条形：宽度依次为 470、350、236 和 132 px，高 34 px，间距 10 px，圆角 7 px；颜色依次为浅蓝、中蓝、中蓝、深蓝
+//   - 运动：从 0.4 s 开始，自上而下间隔 0.36 s，每条用 0.45 s 从中心向两侧生长（ease-out）
+//   - 连接：浅灰色梯形（不透明度 0.8）从上条向下条逐渐收窄，填满间隙
+//   - 数字：条形中部的 100、58、27 和 9（20 px），在各条开始后 0.3 s 起，用 0.25 s 淡入
+//   - 条形彼此分离且居中，避免看起来像倒置的 #220 金字塔图
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合展示每个阶段人数或数量的减少，例如访问 → 注册 → 购买。
+// 标签：漏斗、漏斗图、转化、销售漏斗、流失、阶段、营销
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#235
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 19
+function funnel(k, w, h, u) {
+  bg(k, w, h);
+  const cx0 = w / 2, bh = 34, gap = 10, y0 = 21, f = fade(u);
+  const WD = [470, 350, 236, 132], NUM = ['100', '58', '27', '9'];
+  const COL = [C.blueL, C.blueM, C.blueM, C.blue];
+  WD.forEach((wd, i) => {
+    const t0 = 0.4 + i * 0.36, p = appear(u, t0, 0.45);
+    if (p <= 0) return;
+    const y = y0 + i * (bh + gap);
+    if (i > 0) {
+      const wa = WD[i - 1], ya = y - gap;
+      k.globalAlpha = f * p * 0.8; k.fillStyle = C.g3;
+      k.beginPath(); k.moveTo(cx0 - wa / 2 + 6, ya); k.lineTo(cx0 + wa / 2 - 6, ya);
+      k.lineTo(cx0 + wd / 2 - 6, y); k.lineTo(cx0 - wd / 2 + 6, y); k.closePath(); k.fill();
+    }
+    k.globalAlpha = f;
+    const ww = wd * p;
+    k.fillStyle = COL[i]; rr(k, cx0 - ww / 2, y, ww, bh, 7); k.fill();
+    const pt = P(u, t0 + 0.3, t0 + 0.55);
+    if (pt > 0) {
+      k.globalAlpha = f * pt;
+      txt(k, NUM[i], cx0, y + bh / 2 + 1, `700 20px ${FONT}`, i === 3 ? '#FFFFFF' : C.mark, 'center', 'middle');
+    }
+  });
+  k.globalAlpha = 1;
+}
+CELLS[18] = funnel;

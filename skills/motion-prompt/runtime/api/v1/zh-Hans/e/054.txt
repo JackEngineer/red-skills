@@ -1,0 +1,36 @@
+// Motion Prompt #054 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#054
+//
+// 文字提示 / 英文名：Tooltip
+// 素材包：ui (UI 组件) · 元素 06 · 类别：浮层与展开
+// 示例内容：光标悬停在“?”图标上时，其上方出现深色气泡，显示简短提示；移开后消失。
+// 动效规格：
+//   - 542×191 卡片，循环周期 4.5 s。“?”图标（蓝色圆环，半径 13）位于 (196, 121)，旁边有标签。
+//   - 光标只悬停、不点击：1.05 s 到达“?”，停留至 3.15 s，4.1 s 前移出卡片。
+//   - 显示量 a：1.15–1.35 s 以 easeOutCubic 从 0→1；不透明度为 a，向上移动 6 px 到位。
+//   - 气泡：#26282c，184×36，圆角 8，顶部位于 y 64；带宽 16、高 8 的三角，朝下指向图标；文字为白色 15 px。
+//   - 隐藏：3.25–3.45 s 线性从 1→0。
+// 适用场景：适合为图标或缩写补充一句提示，不占用页面空间。
+// 标签：工具提示、提示、悬停、帮助、信息、标题
+// 尺寸：542x191 px · 循环时长：4.5 秒
+// 依赖：共用辅助代码 ui -> ../../kit/ui.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#054
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 06
+CELLS[5] = ui((w, h, t) => {
+  pageLines(24, 16, 494);
+  bar(24, 116, 150, C.line2, 11); ring(196, 121, 13, C.blue, 2.2); text('?', 196, 122, 16, C.blue, 700, 'center', NUMF);
+  fillRR(24, 146, 494, 34, 8, C.block);
+  const a = eo(seg(t, 1.15, 1.35)) * (1 - seg(t, 3.25, 3.45));
+  if (a > 0) {
+    X.save(); X.globalAlpha = a; const yy = 64 + 6 * (1 - a);
+    fillRR(196 - 92, yy, 184, 36, 8, C.dark);
+    X.beginPath(); X.moveTo(196 - 8, yy + 36); X.lineTo(196, yy + 44); X.lineTo(196 + 8, yy + 36); X.fillStyle = C.dark; X.fill();
+    text('显示简短说明', 196, yy + 18, 15, '#fff', 600, 'center'); X.restore();
+  }
+  // 示范由悬停触发。
+  pointer([[.3, w + 30, h + 30], [1.05, 200, 126], [3.15, 200, 126], [4.1, w + 30, h + 30]], [], t);
+});

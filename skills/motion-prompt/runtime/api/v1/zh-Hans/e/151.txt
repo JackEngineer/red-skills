@@ -1,0 +1,48 @@
+// Motion Prompt #151 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#151
+//
+// 回到顶部按钮 / 英文名：Back-to-top button
+// 素材包：lp2 (落地页与网页效果（第 2 弹）) · 元素 07 · 类别：滚动效果
+// 示例内容：向下滚动后，右下角出现圆形箭头按钮；点击即可直接返回页面顶部。
+// 动效规格：
+//   - 视口 511 × 168。0.2–1.7 s 滚动量从 0→300 px（页面底部），使用三次方缓入缓出。一次演示 4.7 s，每个 9.4 s 素材包周期内重复两次。
+//   - 按钮位于右下角，为橙色圆形（圆心 x = 472，y = 138；半径 19；白色向上箭头；阴影模糊 10 px）。滚动量从 80 增至 140 px 时，按钮上移 10 px 并淡入（三次方缓出）。
+//   - 2.6 s 点击。光标停在按钮上时，按钮在 0.2 s 内变深（#FF5A2C → #D9431C）。
+//   - 点击后，在 2.66–3.26 s（0.6 s）滚动量从 300→0（三次方缓入缓出）；低于 80 px 时，按钮按相同公式淡出。
+// 适用场景：适合博客、长落地页或产品列表等长页面，方便读者返回顶部菜单。
+// 标签：返回顶部、回到顶部、按钮、导航、悬浮按钮、平滑滚动
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 lp2 -> ../../kit/lp2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#151
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 07
+CELLS[6] = (k, w, h, u) => {
+  u = snapU(u);
+  frame(k);
+  const CLK = 2.6, MAX = 300;
+  const y = u < CLK + 0.02 ? steps([[0.2, 0], [1.7, MAX]], u) : MAX * (1 - eIO(P(u, CLK + 0.06, CLK + 0.66)));
+  const cur = t => path([[0, 340, 205], [1.6, 340, 205], [2.35, 472, 138], [2.95, 472, 138], [3.6, 340, 205], [4.7, 340, 205]], t);
+  const [cx, cy] = cur(u);
+  view(k, () => {
+    k.save(); k.translate(0, -y);
+    txt(k, '博客', 70, 32, `800 11px ${EN}`, C.acc, 'left', 'alphabetic', '2px');
+    txt(k, '周末来一场短途旅行', 70, 58, `800 19px ${JP}`, C.ink);
+    pic(k, 70, 72, 371, 100, 2, 8);
+    for (let b = 0; b < 3; b++) { const y0 = 192 + b * 82; k.fillStyle = C.ink; rr(k, 70, y0, 150, 9, 4.5); k.fill(); bars(k, 70, y0 + 22, 371, 4, C.faint, 6, 12); }
+    k.fillStyle = C.ink; k.fillRect(0, 438, VW, 80); logo(k, 70, 454, '#fff'); bars(k, 300, 451, 140, 1, 'rgba(255,255,255,.3)');
+    k.restore();
+    const tb = eOut(clamp((y - 80) / 60));
+    if (tb > 0) {
+      const hov = trans(t => { const [a, b] = cur(t); return Math.hypot(a - 472, b - 138) < 20; }, u, 0.2);
+      k.save(); k.globalAlpha = tb; k.translate(0, 10 * (1 - tb));
+      k.save(); k.shadowColor = 'rgba(28,35,51,.3)'; k.shadowBlur = 10; k.shadowOffsetY = 3; k.fillStyle = mix(C.acc, '#D9431C', hov); k.beginPath(); k.arc(472, 138, 19, 0, 7); k.fill(); k.restore();
+      k.strokeStyle = '#fff'; k.lineWidth = 2.6; k.lineCap = 'round'; k.lineJoin = 'round'; k.beginPath(); k.moveTo(465, 142); k.lineTo(472, 134.5); k.lineTo(479, 142); k.stroke();
+      k.restore();
+    }
+    sbar(k, y / MAX, 0.34);
+    click(k, cx, cy, u, [CLK]);
+  });
+};

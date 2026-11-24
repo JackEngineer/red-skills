@@ -1,0 +1,45 @@
+// Motion Prompt #227 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#227
+//
+// 热力图 / 英文名：Heatmap
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 11 · 类别：展示数字的图表
+// 示例内容：12 × 5 表格中的单元格从左上到右下呈波浪状填入深浅不同的蓝色，再以相同方向恢复灰色。
+// 动效规格：
+//   - 表格：12 列 × 5 行，每格 30×28 px（圆角 4 px、间距 4 px），左侧以灰色短条表示行标签
+//   - 颜色：根据数值由浅灰变为五种由浅至深的蓝色之一；数值（固定随机种子）形成波浪
+//   - 填色：每格从 0.4 s + 列 × 0.075 s + 行 × 0.06 s 开始，用 0.32 s 染色（ease-out），从左上到右下沿对角方向扩散
+//   - 清除：每格从 3.95 s + 列 × 0.025 s + 行 × 0.02 s 开始，用 0.22 s 恢复灰色（cubic ease-in-out）
+//   - 表格本身（单元格和标签）在整个循环中保留
+// 适用场景：适合一眼看出表格中的高低分布，例如按星期和时段交叉排列的数据。
+// 标签：热力图、热力图、矩阵、颜色刻度、表格、密度、日历热力图
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#227
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 11
+const HM = (() => {
+  const r = rand(1103), cols = 12, rows = 5, v = [];
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+    const base = 0.5 + 0.42 * Math.sin(i * 0.62 - 0.4) * Math.cos(j * 0.85 - 1.1) + (r() - 0.5) * 0.28;
+    v.push(clamp(Math.floor(clamp(base, 0, 0.999) * 5), 0, 4));
+  }
+  return { cols, rows, v };
+})();
+const HMCOL = [mix(C.stage, C.blueL, 0.55), C.blueL, C.blueM, mix(C.blueM, C.blue, 0.55), C.blue];
+function heatmap(k, w, h, u) {
+  bg(k, w, h);
+  const { cols, rows, v } = HM;
+  const cw = 30, ch = 28, g = 4, gx = 96, gy = (h - (rows * (ch + g) - g)) / 2;
+  // 用短灰条模拟表格的行标签。
+  for (let j = 0; j < rows; j++) { rr(k, 46, gy + j * (ch + g) + ch / 2 - 4, 36, 8, 4); k.fillStyle = C.g3; k.fill(); }
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+    const tin = 0.4 + i * 0.075 + j * 0.06;
+    const tout = 3.95 + i * 0.025 + j * 0.02;
+    const p = easeOut(P(u, tin, tin + 0.32)) * (1 - easeInOut(P(u, tout, tout + 0.22)));
+    rr(k, gx + i * (cw + g), gy + j * (ch + g), cw, ch, 4); k.fillStyle = mix(C.g2, HMCOL[v[j * cols + i]], p); k.fill();
+  }
+}
+CELLS[10] = heatmap;

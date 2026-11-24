@@ -1,0 +1,42 @@
+// Motion Prompt #149 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#149
+//
+// 滚动隐藏页头 / 英文名：Hide-on-scroll header
+// 素材包：lp2 (落地页与网页效果（第 2 弹）) · 元素 05 · 类别：滚动效果
+// 示例内容：向下滚动时，页头向上滑出，为内容腾出空间；只要稍向上滚动，页头就立即返回。
+// 动效规格：
+//   - 视口 511 × 168，顶部固定高 34 px 的页头。滚动：0.3–1.1 s 从 0→170 px（下），1.5–1.9 s 从 170→100（上），2.4–2.9 s 从 100→230（下），3.3–4.3 s 从 230→0（上），均使用三次方缓入缓出。一次演示 4.7 s，每个 9.4 s 素材包周期内重复两次。
+//   - 最近一次移动方向向下则隐藏页头，向上则显示。距页面顶部 34 px 内始终显示。
+//   - 隐藏和显示均在 0.3 s 内完成 36 px 的向上位移及其反向运动（二次方缓入缓出），类似带 transition 的 transform: translateY。
+//   - 滚动后，页头下方出现 12 px 阴影（前 30 px 滚动范围内不透明度从 0→0.14）。滚动条滑块随滚动移动。
+// 适用场景：适合手机等屏幕空间紧张的场景，增加正文显示空间，轻轻回滚就能找到菜单。
+// 标签：页头、滚动时隐藏、滚动收起页头、导航、吸顶页头、滚动方向
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 lp2 -> ../../kit/lp2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#149
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 05
+CELLS[4] = (k, w, h, u) => {
+  u = snapU(u);
+  frame(k);
+  const SY = t => steps([[0.3, 0], [1.1, 170], [1.5, 170], [1.9, 100], [2.4, 100], [2.9, 230], [3.3, 230], [4.3, 0]], t), y = SY(u);
+  // 最近一次向下滚动时隐藏页眉。滚至页首时始终显示。
+  const hidden = t => { const yt = SY(t); if (yt < 34) return false; for (let i = 0, tt = t; i < 600; i++, tt -= 1 / 120) { const d = SY(tt) - SY(tt - 1 / 120); if (Math.abs(d) > 1e-4) return d > 0; } return false; };
+  const q = trans(hidden, u, 0.3, eIOs);
+  view(k, () => {
+    k.save(); k.translate(0, -y);
+    pic(k, 24, 48, 214, 110, 1, 8);
+    txt(k, '旅行准备，', 262, 84, `800 22px ${JP}`, C.ink); txt(k, '一站办妥。', 262, 114, `800 22px ${JP}`, C.ink); bars(k, 262, 128, 200, 2); btn(k, 262, 152, 100, 24, '了解详情');
+    k.fillStyle = C.soft; k.fillRect(0, 196, VW, 260);
+    txt(k, '热门方案', VW / 2, 232, `800 17px ${JP}`, C.ink, 'center');
+    for (let r = 0; r < 2; r++) for (let i = 0; i < 3; i++) { const x = 34 + i * 152, y0 = 250 + r * 100; k.fillStyle = '#fff'; rr(k, x, y0, 136, 88, 8); k.fill(); pic(k, x + 8, y0 + 8, 120, 46, (i + r) % 3, 5); bars(k, x + 10, y0 + 64, 100, 2, C.faint, 5, 10); }
+    k.restore();
+    const hy = -36 * q;
+    if (y > 0 && q < 1) { const g = k.createLinearGradient(0, hy + 34, 0, hy + 46); g.addColorStop(0, `rgba(28,35,51,${0.14 * clamp(y / 30)})`); g.addColorStop(1, 'rgba(28,35,51,0)'); k.fillStyle = g; k.fillRect(0, hy + 34, VW, 12); }
+    header(k, hy);
+    sbar(k, y / 230, 0.42);
+  });
+};

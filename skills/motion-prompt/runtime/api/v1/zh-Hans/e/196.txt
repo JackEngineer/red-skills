@@ -1,0 +1,22 @@
+// Motion Prompt #196 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#196
+//
+// 浮世绘木版画 / 英文名：Ukiyo-e woodblock print
+// 素材包：artstyle (图像生成常用的画风名称) · 元素 04 · 类别：绘画与版画
+// 示例内容：同一张线稿变成江户时代的彩色木版画：房屋变为日式瓦顶屋，树变为松树，太阳变为红色圆盘，天空从顶部的深靛蓝向下渐淡。
+// 动效规格：
+//   - 媒介：江户时代的多色木版画
+//   - 外观：细而均匀的黑色轮廓、平涂色块、各色版之间轻微错位，保留和纸纤维与印刷不均的质感
+//   - 天空：顶部深靛蓝向下渐淡，横贯一条雾带；太阳为红色圆盘（示例不包含富士山、海浪、人物或文字）
+//   - 示例：将同一张基础草图（山丘上的房屋、树和太阳的线稿）作为参考交给图像模型，按此风格重绘。0.5 s 至 1.35 s，以斜向擦除从草图切换为该风格；画面缓慢放大至 1.045x，持续到 4.0 s；4.0 s 至 4.5 s 淡回草图（单次循环 = 4.7 s，cubic ease-in-out）
+// 适用场景：适合用鲜明的平涂色块和线条表现日本题材。
+// 标签：浮世绘、木版印刷、日本版画、平涂色块、江户时代、版画制作
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 artstyle -> ../../kit/artstyle.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#196
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 04
+CELLS[3] = (k, w, h, u) => gafu(k, w, h, u, '04');

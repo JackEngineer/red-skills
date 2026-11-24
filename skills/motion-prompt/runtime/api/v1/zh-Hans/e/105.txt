@@ -1,0 +1,45 @@
+// Motion Prompt #105 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#105
+//
+// 散景 / 英文名：Bokeh
+// 素材包：photo (摄影效果、光线与风格) · 元素 09 · 类别：镜头与相机效果
+// 示例内容：光圈打开时，焦点上的人物保持清晰，后方建筑变模糊，路灯和远处灯光扩散成浅色的大光斑。
+// 动效规格：
+//   - 场景 2：街角，建筑、树木和路灯（x 114、292、494）位于 y 132–162 的道路后方；人物站在左前方（脚部位于 x 176、y 200，身高 124 px）。背景变暗（天空 #E7E5E1）。
+//   - 背景模糊（除人物外的所有物体）：0 → 6 px。
+//   - 灯光：三盏路灯（大小 1.25），另有 12 处灯光，间距 45 px（y 44–114，大小 0.6–1.2，固定随机种子）；光斑半径 = (2.4 + 15 × effect) × size。
+//   - 光斑：不透明度 100% → 55%，路灯为琥珀色 #FFC75A，远处灯光为 #FFE3A3，边缘有 1.2 px 的琥珀色轮廓。
+//   - 人物保持清晰；右上角光圈 f/16 → f/1.4（8 档）。
+//   - 时间：效果在 0.4 s 至 1.4 s 之间显现，保持至 4.0 s，并在 4.8 s 前消失（单次 = 5 s，三次缓入缓出，约为 cubic-bezier(0.65,0,0.35,1)）。
+// 适用场景：适合突出人物或产品，并营造柔和、喜庆的夜间氛围。
+// 标签：焦外虚化、浅景深、背景模糊、大光圈、光圈 f/1.4、失焦、灯光
+// 尺寸：539x208 px · 循环时长：5 秒
+// 依赖：共用辅助代码 photo -> ../../kit/photo.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#105
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 09
+CELLS[8] = cell((k, u) => {
+  const a = env(u), p = pal(BASE, DIM, a);
+  const [B, kb] = layer('bokeh'); stageStreet(kb, p, { person: false });
+  const [Bb, kbb] = layer('bokeh-b'); kbb.filter = `blur(${(6 * a).toFixed(2)}px)`; kbb.drawImage(B, 0, 0); kbb.filter = 'none';
+  k.drawImage(B, 0, 0); k.drawImage(Bb, 0, 0);
+  // 使用三个路灯和十二处窗灯或远处光源。远处光源每隔 45 像素排布，高度和大小由固定种子生成。
+  const pts = once('bokeh-pts', () => {
+    const o = LAMPS.map(x => [x + 9, ROAD - 53, 1.25, 0]), r = rng(9);
+    for (let i = 0; i < 12; i++) o.push([22 + i * 45 + r() * 20, 44 + r() * 70, 0.6 + r() * 0.6, 1]);
+    return o;
+  });
+  k.save();
+  for (const [x, y, s, w] of pts) {
+    const r = (2.4 + 15 * a) * s;
+    k.globalAlpha = lerp(1, 0.55, a); k.fillStyle = w ? BASE.glow : BASE.lit; k.beginPath(); k.arc(x, y, r, 0, TAU); k.fill();
+    k.globalAlpha = 0.7 * a; k.strokeStyle = BASE.lit; k.lineWidth = 1.2; k.stroke();
+  }
+  k.restore();
+  figure(pen(k), FIG[0], FIG[1], FIG[2], p.person);
+  const stops = ['f/16', 'f/11', 'f/8', 'f/5.6', 'f/4', 'f/2.8', 'f/2', 'f/1.4'];
+  hud(k, stops[Math.round(a * 7)]);
+});

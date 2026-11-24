@@ -1,0 +1,43 @@
+// Motion Prompt #240 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#240
+//
+// 同心圆图 / 英文名：Concentric circle diagram
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 24 · 类别：展示流程与全局的图
+// 示例内容：外圆、中圆和内圆从同一圆心依次放大，彼此嵌套，分别标注 TAM、SAM 和 SOM。
+// 动效规格：
+//   - 圆：三个共圆心的实心圆，半径分别为 91、61 和 31 px（从外向内为浅蓝、中蓝、深蓝），外圆的浅灰辅助圆环始终保留
+//   - 运动：由外向内，间隔 0.45 s（0.4、0.85、1.3 s），每个用 0.5 s 从圆心放大，以 60:40 混合 ease-out 和 ease-out-back，产生轻微超调
+//   - 标签：TAM 和 SAM 位于圆之间的环带中，SOM 位于内圆中（18 px）；各圆开始后 0.55 s 起，用 0.3 s 淡入
+//   - 区别于 #217 维恩图：各圆逐层嵌套，而非并排放置
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合展示从整体逐步缩小到目标部分的范围，例如 TAM、SAM 和 SOM。
+// 标签：同心圆、总市场、可服务市场与可获取市场、市场规模、嵌套圆、洋葱图、目标市场、图层
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#240
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 24
+function concentric(k, w, h, u) {
+  bg(k, w, h);
+  const f = fade(u), cx0 = w / 2, cy0 = h / 2 + 2;
+  const RR = [91, 61, 31], COL = [C.blueL, C.blueM, C.blue], LB = ['TAM', 'SAM', 'SOM'];
+  k.strokeStyle = C.g2; k.lineWidth = 2; k.beginPath(); k.arc(cx0, cy0, RR[0], 0, 7); k.stroke();
+  k.globalAlpha = f;
+  RR.forEach((r, i) => {
+    const t0 = 0.4 + i * 0.45, p = P(u, t0, t0 + 0.5);
+    if (p <= 0) return;
+    k.fillStyle = COL[i]; k.beginPath(); k.arc(cx0, cy0, r * lerp(easeOut(p), easeOutBack(p), 0.4), 0, 7); k.fill();
+  });
+  RR.forEach((r, i) => {
+    const t0 = 0.4 + i * 0.45, pt = P(u, t0 + 0.55, t0 + 0.85);
+    if (pt <= 0) return;
+    k.globalAlpha = f * pt;
+    const ly = i < 2 ? cy0 - (r + RR[i + 1]) / 2 : cy0;
+    txt(k, LB[i], cx0, ly + 1, `700 18px ${FONT}`, i === 2 ? '#FFFFFF' : C.mark, 'center', 'middle');
+  });
+  k.globalAlpha = 1;
+}
+CELLS[23] = concentric;

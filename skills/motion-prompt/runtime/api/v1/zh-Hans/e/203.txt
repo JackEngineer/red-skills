@@ -1,0 +1,22 @@
+// Motion Prompt #203 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#203
+//
+// 装饰艺术（Art Deco） / 英文名：Art Deco
+// 素材包：artstyle (图像生成常用的画风名称) · 元素 11 · 类别：平面设计风格
+// 示例内容：同一张线稿变成金黑配色的海报：直线光芒从太阳向外发散，几何直线装饰近乎对称排列。
+// 动效规格：
+//   - 配色：以金色和黑色为主
+//   - 外观：放射状直线光芒、几何直线和近乎对称的装饰
+//   - 氛围：1920 年代海报（示例无文字）
+//   - 示例：将同一张基础草图（山丘上的房屋、树和太阳的线稿）作为参考交给图像模型，按此风格重绘。0.5 s 至 1.35 s，以斜向擦除从草图切换为该风格；画面缓慢放大至 1.045x，持续到 4.0 s；4.0 s 至 4.5 s 淡回草图（单次循环 = 4.7 s，cubic ease-in-out）
+// 适用场景：适合奢华、古典、华丽的画面。
+// 标签：装饰艺术、20 世纪 20 年代、金色、几何、对称、海报
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 artstyle -> ../../kit/artstyle.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#203
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 11
+CELLS[10] = (k, w, h, u) => gafu(k, w, h, u, '11');

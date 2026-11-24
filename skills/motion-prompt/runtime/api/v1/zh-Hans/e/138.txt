@@ -1,0 +1,26 @@
+// Motion Prompt #138 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#138
+//
+// 百叶窗转场 / 英文名：Blinds transition
+// 素材包：motion2 (动态图形（第 2 弹）) · 元素 18 · 类别：转场与强调
+// 示例内容：一排细条带的缝隙逐渐扩大，直到完整露出下一场景。
+// 动效规格：
+//   - 白天场景 → 夜晚场景 → 白天，每段 2.35 s。七条水平条带，每条高 208 ÷ 7 ≈ 29.7 px。
+//   - 在 0.4–1.65 s（1.25 s）使用二次方缓入缓出，所有条带同时从上缘向下揭开下一场景，可见高度从 0 增至整条高度。
+//   - 原场景保留在下方，两幅画面都不移动。
+// 适用场景：适合白天与夜晚、前后对比等清晰的场景切换，也可营造复古感。
+// 标签：百叶窗、百叶窗、条纹、转场、划像转场、场景切换
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion2 -> ../../kit/motion2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#138
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 18
+CELLS[17] = abCell((k, w, h, u, a, b) => {
+  const p = eIOs(P(u, TA - 0.1, TB + 0.15)), N = 7, sh = h / N, S = [scrA, scrB];
+  S[a](k, w, h);
+  if (p <= 0) return;
+  k.save(); k.beginPath(); for (let i = 0; i < N; i++) k.rect(0, i * sh, w, sh * p + (p > 0.999 ? 1 : 0)); k.clip(); S[b](k, w, h); k.restore();
+});

@@ -1,0 +1,35 @@
+// Motion Prompt #056 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#056
+//
+// 轻提示 / 英文名：Toast notification
+// 素材包：ui (UI 组件) · 元素 08 · 类别：浮层与展开
+// 示例内容：点击“保存”，深色通知滑入右下角；底部倒计时条走完后，通知滑出。
+// 动效规格：
+//   - 542×191 卡片，循环周期 4.5 s。光标在 1.0 s 点击蓝色“保存”按钮（110×36，左下角），然后向左下方离开。
+//   - 通知：#26282c，214×52，圆角 10，距右侧 18 px、底部 16 px；在 1.05–1.4 s 以 easeOutCubic 从右侧滑入 240 px。
+//   - 内部为蓝色圆中的白色勾号和白色 15 px“已保存”文字。
+//   - 底部剩余时间线高 3 px，在 1.4–3.2 s 线性从 194 px 缩短至 0。
+//   - 退场：3.2–3.55 s 以 easeInOutCubic 向右滑出 240 px。
+// 适用场景：适合确认保存或发送等操作结果，同时不打断用户。
+// 标签：轻提示、条形提示、通知、提示、消息、自动关闭
+// 尺寸：542x191 px · 循环时长：4.5 秒
+// 依赖：共用辅助代码 ui -> ../../kit/ui.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#056
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 08
+CELLS[7] = ui((w, h, t) => {
+  bar(24, 16, 90, C.line2, 10); strokeRR(24, 34, 300, 34, 7, C.line2, 1.5); bar(24, 82, 90, C.line2, 10); strokeRR(24, 100, 300, 34, 7, C.line2, 1.5);
+  fillRR(24, 146, 110, 36, 8, C.blue); text('保存', 79, 164, 16, '#fff', 600, 'center');
+  const tin = eo(seg(t, 1.05, 1.4)), tout = eio(seg(t, 3.2, 3.55));
+  if (tin > 0 && tout < 1) {
+    const tw0 = 214, th = 52, tx = w - 18 - tw0 + (1 - tin) * 240 + tout * 240, ty = h - 16 - th;
+    shadowed(() => fillRR(tx, ty, tw0, th, 10, C.dark), 18, 6, .25);
+    circle(tx + 26, ty + 24, 11, C.blue); check(tx + 26, ty + 24, 5, '#fff', 2.4);
+    text('已保存', tx + 46, ty + 24, 15, '#fff', 600);
+    const life = 1 - seg(t, 1.4, 3.2); fillRR(tx + 10, ty + th - 7, (tw0 - 20) * life, 3, 1.5, C.sb);
+  }
+  pointer([[.3, -30, h + 30], [.95, 84, 168], [1.5, 84, 168], [2.2, -40, h + 40]], [1.0], t);
+});

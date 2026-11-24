@@ -1,0 +1,36 @@
+// Motion Prompt #033 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#033
+//
+// 焦点转移 / 英文名：Rack focus
+// 素材包：camera (镜头运动与转场) · 元素 09 · 类别：拍摄方式与时间效果
+// 示例内容：相机不动，焦点从前景花朵移至后方人物，两者的清晰与模糊状态互换。
+// 动效规格：
+//   - 相机：位置、方向和焦距都固定，高 1.1 m；只改变模糊程度。
+//   - 模糊：前景花朵（左侧 0.75 m，距离 2 m）从 0 px → 7 px；人物与背景从 6 px → 0 px，人物位于右侧 0.9 m、距离 9 m；地面网格使用背景模糊值的 0.6 倍。
+//   - 时间：1.0 s 至 2.6 s，历时 1.6 s，使用三次方缓入缓出，约 cubic-bezier(0.65,0,0.35,1)。
+//   - 焦点标记：蓝色角括号从花朵沿直线移动至人物，半宽从 46 px → 30 px。
+//   - 主体：花朵和人物都不动。
+//   - 返回：在 2.6–4.2 s 保持，最后 0.5 s 交叉淡化回起点；右上角显示对焦距离，◎ 2m → ◎ 9m。
+// 适用场景：适合在不切镜的情况下，把注意力从前景移到背景，或反向转移。
+// 标签：焦点转移、焦点转移、拉焦、景深、模糊、焦外虚化、前景
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera -> ../../kit/camera.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#033
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 09
+CELLS[8] = shot(camCell((k, w, h, p) => {
+  world(k, w, h, cam({ y: 1.1 }), {
+    person: { x: 0.9, z: 9 }, blurFg: 7 * p, blurBg: 6 * (1 - p),
+    extra: [[-0.75, 0, 2.0, (kk, s) => { kk.fillStyle = C.g3; kk.fillRect(-0.025, 0, 0.05, 0.75); kk.fillStyle = C.blueM; for (let i = 0; i < 6; i++) { kk.beginPath(); kk.ellipse(Math.cos(i) * 0.09, 0.8 + Math.sin(i) * 0.09, 0.08, 0.05, i, 0, 7); kk.fill(); } kk.fillStyle = C.blue; kk.beginPath(); kk.arc(0, 0.8, 0.05, 0, 7); kk.fill(); }, true]],
+    after: (kk, cc) => {
+      const a = proj(cc, -0.75, 0.8, 2.0), b = proj(cc, 0.9, 0.9, 9);
+      const x = lerp(a.x, b.x, p), y = lerp(a.y, b.y, p), r = lerp(46, 30, p);
+      kk.strokeStyle = C.blue; kk.lineWidth = 2; kk.beginPath();
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sy]) => { kk.moveTo(x + sx * r, y + sy * r - sy * 9); kk.lineTo(x + sx * r, y + sy * r); kk.lineTo(x + sx * r - sx * 9, y + sy * r); });
+      kk.stroke();
+    }
+  });
+}, p => `◎ ${lerp(2, 9, p).toFixed(0)}m`, 1.0, 2.6));

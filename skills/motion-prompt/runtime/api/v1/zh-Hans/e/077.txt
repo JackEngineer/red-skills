@@ -1,0 +1,42 @@
+// Motion Prompt #077 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#077
+//
+// 横向滚动 / 英文名：Horizontal scroll
+// 素材包：lp (落地页与网页效果) · 元素 05 · 类别：滚动效果
+// 示例内容：页面向下滚动时，该区块保持固定，四张编号作品卡片横向向左移动。
+// 动效规格：
+//   - 滚动：0.3–3.0 s 从 0→420 px，3.5–4.5 s 从 420→0（三次方缓入缓出）。
+//   - 标题“作品”滚出视口；区块在滚动 40 px 时到达顶部并固定。
+//   - 四张卡片各为 200 × 112，间距 20，两侧内边距 34。横向移动距离 = 34·2 + 200·4 + 20·3 − 511 = 417 px。
+//   - 卡片 x = 起始 x − p × 417，其中 p = (scroll − 40) / 380：与滚动量呈线性关系，不使用缓动。
+//   - 卡片横移时，滚动条滑块向下移动。
+// 适用场景：适合在较长的纵向页面中，以横排展示作品、案例或产品。
+// 标签：横向滚动、横向移动、GSAP 滚动触发、固定、图库、作品集、滚动
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#077
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 05
+CELLS[4] = (k, w, h, u) => {
+  frame(k);
+  const y = steps([[0.3, 0], [3.0, 420], [3.5, 420], [4.5, 0]], u);
+  const PIN0 = 40, PD = 380, N = 4, PWD = 200, GAP = 20;
+  const top = y < PIN0 ? PIN0 - y : 0, p = clamp((y - PIN0) / PD);
+  const travel = 34 * 2 + N * PWD + (N - 1) * GAP - VW;
+  view(k, () => {
+    txt(k, '作品', 34, 30 - y, `800 20px ${EN}`, C.ink, 'left', 'alphabetic', '2px');
+    k.save(); k.translate(0, top);
+    k.fillStyle = C.soft; k.fillRect(0, 0, VW, VH + 40);
+    for (let i = 0; i < N; i++) {
+      const x = 34 + i * (PWD + GAP) - p * travel;
+      pic(k, x, 18, PWD, 112, i % 3, 8);
+      txt(k, '0' + (i + 1), x + 14, 118, `800 22px ${EN}`, '#fff');
+      bars(k, x, 140, 120, 1, '#CBD2DE');
+    }
+    k.restore();
+    sbar(k, y / 420, 0.36);
+  });
+};

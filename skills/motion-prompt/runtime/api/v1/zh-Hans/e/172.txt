@@ -1,0 +1,35 @@
+// Motion Prompt #172 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#172
+//
+// 长镜头 / 英文名：Long take
+// 素材包：camera2 (镜头运动与转场（第 2 弹）) · 元素 04 · 类别：镜头运动
+// 示例内容：一个没有剪切的连续镜头跟随行走的人物，底部条带始终是一整条，没有断点。
+// 动效规格：
+//   - 衔接：无；一个镜头连续跟随人物 4.2 s（#041 跳切将其分成五段）。
+//   - 主体：人物以恒定速度从左前方（x = -3.4 m，纵深 5.2 m）走向右后方（x = 2.8 m，纵深 9.6 m）；腿和手臂按 sin(t×7)×0.42 rad 摆动。
+//   - 相机：跟随人物向右横移 0 m → 1.4 m，同时转向，yaw = atan2(person x - camera x, depth)×0.8；高度 1.4 m。
+//   - 底部条带：一整条蓝色条带，标有“一镜到底，无切镜”并带有播放头，表示没有中断。
+//   - 返回：在 4.2 s 停止，最后 0.5 s 交叉淡化回起点（单次 = 4.7 s）。
+//   - 右上角读数显示已用时间（无切镜 0.0s → 4.2s）。
+// 适用场景：适合保持连续的紧张感和临场感，或把一系列动作展现为一个流畅过程。
+// 标签：长镜头、一镜到底、一镜到底、连续拍摄、无切镜、段落长镜头、运镜
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera2 -> ../../kit/camera2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#172
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 04
+CELLS[3] = shot((k, w, h, u) => {
+  const uu = Math.min(u, CYC - RESET);
+  const draw = (kk, t) => {
+    const p = t / (CYC - RESET);
+    const x = lerp(-3.4, 2.8, p), z = lerp(5.2, 9.6, p), cx = lerp(0, 1.4, p);
+    world(kk, w, h, cam({ x: cx, y: 1.4, yaw: Math.atan2(x - cx, z) * 0.8 }), { person: { x, z, walk: t * 7 }, fg: [[-2.6, 3.4], [3.6, 4.6, 'rock']] });
+    strip(kk, w, h, [[0, CYC, '一镜到底，无切镜', C.blue]], t);
+  };
+  const r = P(u, CYC - RESET, CYC);
+  blend(k, kk => draw(kk, uu), kk => draw(kk, 0), eIOs(r));
+  return `无切镜 ${(r > .5 ? 0 : uu).toFixed(1)}s`;
+});

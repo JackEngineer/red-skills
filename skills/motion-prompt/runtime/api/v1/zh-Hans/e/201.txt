@@ -1,0 +1,21 @@
+// Motion Prompt #201 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#201
+//
+// 波普艺术 / 英文名：Pop art
+// 素材包：artstyle (图像生成常用的画风名称) · 元素 09 · 类别：平面设计风格
+// 示例内容：同一张线稿变成以粗黑轮廓包围的平涂原色色块，局部点缀半色调网点。
+// 动效规格：
+//   - 外观：粗黑轮廓与平涂原色色块，局部点缀少量半色调网点
+//   - 氛围：1960 年代丝网印刷作品
+//   - 示例：将同一张基础草图（山丘上的房屋、树和太阳的线稿）作为参考交给图像模型，按此风格重绘。0.5 s 至 1.35 s，以斜向擦除从草图切换为该风格；画面缓慢放大至 1.045x，持续到 4.0 s；4.0 s 至 4.5 s 淡回草图（单次循环 = 4.7 s，cubic ease-in-out）
+// 适用场景：适合醒目的广告、社交媒体图片或周边商品。
+// 标签：波普艺术、半色调、漫画、原色、粗轮廓、丝网印刷
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 artstyle -> ../../kit/artstyle.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#201
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 09
+CELLS[8] = (k, w, h, u) => gafu(k, w, h, u, '09');

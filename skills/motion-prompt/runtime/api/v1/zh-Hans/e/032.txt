@@ -1,0 +1,31 @@
+// Motion Prompt #032 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#032
+//
+// 滑动变焦 / 英文名：Dolly zoom (Vertigo)
+// 素材包：camera (镜头运动与转场) · 元素 08 · 类别：镜头运动
+// 示例内容：相机后退并同步按相同比例变焦拉近，人物尺寸不变，只有背景向前逼近。
+// 动效规格：
+//   - 相机：与人物的距离 d 从 3.2 m → 8 m，后退 4.8 m；人物在前方 8 m，相机高度 1.3 m。
+//   - 焦距：f = 330 × d/8 px，即 132 px → 330 px，显示为 10mm → 24mm，保持距离 ÷ 焦距不变。
+//   - 时间：0.5 s 至 3.4 s，历时 2.9 s，使用三次方缓入缓出，约 cubic-bezier(0.65,0,0.35,1)。
+//   - 主体：人物不动，在画面内的高度不变；头部（1.8 m）与脚部的 160 px 宽蓝色虚线显示尺寸恒定。
+//   - 背景：48 m 处的建筑放大约 2.2 倍，山放大约 2.4 倍，向人物身后逼近；人物前方的地面则缩小。
+//   - 返回：在 3.4–4.2 s 保持，最后 0.5 s 交叉淡化回起始画面，每轮 4.7 s。
+// 适用场景：适合顿悟瞬间，或用画面表现不安和震惊。
+// 标签：滑动变焦、眩晕效果、滑动变焦、推拉变焦、背景拉伸、不安感、运镜
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera -> ../../kit/camera.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#032
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 08
+CELLS[7] = shot(camCell((k, w, h, p) => {
+  const d = lerp(3.2, 8, p), f = F0 * d / 8 * 1.0;
+  const c = cam({ z: 8 - d, f, y: 1.3 });
+  world(k, w, h, c, {
+    person: { z: 8 }, trees: true,
+    after: (kk, cc) => { const top = proj(cc, 0, 1.8, 8).y, bot = proj(cc, 0, 0, 8).y; kk.strokeStyle = C.blue; kk.lineWidth = 1.6; kk.setLineDash([6, 5]); kk.beginPath(); kk.moveTo(-80, top); kk.lineTo(80, top); kk.moveTo(-80, bot); kk.lineTo(80, bot); kk.stroke(); kk.setLineDash([]); }
+  });
+}, p => mm(F0 * lerp(3.2, 8, p) / 8)));

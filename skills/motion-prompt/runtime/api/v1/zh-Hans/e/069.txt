@@ -1,0 +1,40 @@
+// Motion Prompt #069 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#069
+//
+// 骨架屏 / 英文名：Skeleton screen
+// 素材包：ui (UI 组件) · 元素 21 · 类别：导航与状态反馈
+// 示例内容：点击重新加载后，列表变成相同形状的灰色块，表面扫过亮光；加载结束后恢复内容。
+// 动效规格：
+//   - 542×191 卡片，循环周期 4.5 s。两行列表，每行包含 96×56 图片和三行文字。光标在 1.0 s 点击右上角重新加载图标。
+//   - 1.05–1.2 s 内（线性），内容变为位置、尺寸相同的灰色 #e9e7e5 圆角块。
+//   - 扫光：宽 160 的白色带（边缘透明，中央不透明度 0.75）每 0.9 s 从 x −200 扫至 x 742，仅绘制在灰块范围内。
+//   - 内容在 3.0–3.3 s 恢复（线性）。
+// 适用场景：适合需要短暂加载的列表或卡片，让用户在等待时看到布局。
+// 标签：骨架占位、骨架屏、占位内容、微光扫过、加载、内容占位
+// 尺寸：542x191 px · 循环时长：4.5 秒
+// 依赖：共用辅助代码 ui -> ../../kit/ui.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#069
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 21
+CELLS[20] = ui((w, h, t) => {
+  const sk = seg(t, 1.05, 1.2) * (1 - seg(t, 3.0, 3.3));
+  ring(w - 40, 26, 14, C.line2, 1.8); X.beginPath(); X.arc(w - 40, 26, 7, -Math.PI * .1, Math.PI * 1.4); X.strokeStyle = '#666'; X.lineWidth = 2.2; X.stroke();
+  bar(24, 20, 160, C.line2, 12);
+  for (let k = 0; k < 2; k++) {
+    const y = 56 + k * 66;
+    X.save(); X.globalAlpha = 1 - sk; mountains(24, y, 96, 56, k); bar(136, y + 6, 200, C.ink, 11); bar(136, y + 26, 340); bar(136, y + 42, 260); X.restore();
+    if (sk > 0) {
+      X.save(); X.globalAlpha = sk; const g = '#e9e7e5';
+      fillRR(24, y, 96, 56, 8, g); fillRR(136, y + 4, 200, 14, 7, g); fillRR(136, y + 26, 340, 10, 5, g); fillRR(136, y + 42, 260, 10, 5, g);
+      const sx = -200 + ((t - 1.1) % 0.9) / 0.9 * (w + 400);
+      X.globalCompositeOperation = 'source-atop';
+      const gr = X.createLinearGradient(sx - 80, 0, sx + 80, 0); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(.5, 'rgba(255,255,255,.75)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      X.fillStyle = gr; X.fillRect(0, y - 2, w, 64);
+      X.restore();
+    }
+  }
+  pointer([[.3, w + 30, h + 30], [.95, w - 38, 30], [1.4, w - 38, 30], [2.1, w + 30, h + 30]], [1.0], t);
+});

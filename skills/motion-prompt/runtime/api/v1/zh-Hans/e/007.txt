@@ -1,0 +1,47 @@
+// Motion Prompt #007 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#007
+//
+// 数字递增 / 英文名：Count-up
+// 素材包：motion (动态图形) · 元素 07 · 类别：入场与文字
+// 示例内容：数字快速增长，并停在最终数值。
+// 动效规格：
+//   - 每轮 4.7 s。在 0.1–0.4 s 淡入，在 4.0–4.4 s 淡出。
+//   - 数字（粗体 104 px）：在 0.45–2.9 s 从 0→2,480。数值 = round(target × (1 − (1 − p)^4))，先快后慢。
+//   - 保留千位分隔符。各位数字等宽且整体右对齐，避免横向抖动。
+//   - 2.9 s 到达目标值：颜色由白色变为黄色，缩放轻微弹跳，1 + 0.07·e^(−7t)·cos(15t)。
+//   - 左侧上箭头徽标（薄荷绿圆形，半径 34）：从 0.35 s 起以弹簧曲线 1 − e^(−7t)·cos(14t) 出现；计数期间以 6 px × (1 − p)^3 × sin(30u) 上下抖动。
+//   - 下方进度条（330 × 12，蓝色至薄荷绿渐变）按数值 ÷ 目标值的比例填充。
+// 适用场景：适合突出营收、用户数、完成率等数值的规模或增长。
+// 标签：数字递增、计数器、数字、里程表、统计数据、关键绩效指标、进度
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion -> ../../kit/motion.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#007
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 07
+CELLS[6] = (k, w, h, u) => {
+  stage(k);
+  const TARGET = 2480, a = P(u, 0.1, 0.4) * (1 - P(u, 4.0, 4.4));
+  const p = P(u, 0.45, 2.9), v = Math.round(TARGET * (1 - Math.pow(1 - p, 4)));
+  const s = v.toLocaleString('en-US'), f = `800 104px ${DISP}`;
+  k.font = f; const dw = k.measureText('0').width + 2, cw = k.measureText(',').width;
+  const full = TARGET.toLocaleString('en-US'); let tot = 0; for (const ch of full) tot += ch === ',' ? cw : dw;
+  const land = u - 2.9, pop = 1 + (land > 0 ? 0.07 * Math.exp(-7 * land) * Math.cos(15 * land) : 0);
+  const X = w / 2 + 42, Y = 96;
+  k.save(); k.globalAlpha = a; k.translate(X, Y); k.scale(pop, pop);
+  let x = tot / 2;
+  const speed = p < 1 ? Math.pow(1 - p, 3) : 0;
+  for (const ch of [...s].reverse()) {
+    const cwid = ch === ',' ? cw : dw; x -= cwid;
+    txt(k, ch, x + cwid / 2, 0, f, land > 0 ? C.yel : '#fff', 'center', 'middle');
+  }
+  k.restore();
+  const ar = spring(u - 0.35, 14, 7) * (1 - P(u, 4.0, 4.3)), bob = speed * 6 * Math.sin(u * 30);
+  if (ar > 0.01) { k.save(); k.translate(X - tot / 2 - 58, Y - 2 + bob); k.scale(ar, ar); k.fillStyle = C.mint; k.beginPath(); k.arc(0, 0, 34, 0, 7); k.fill(); k.strokeStyle = C.navy; k.lineWidth = 8; k.lineCap = 'round'; k.lineJoin = 'round'; k.beginPath(); k.moveTo(0, 15); k.lineTo(0, -14); k.moveTo(-13, -1); k.lineTo(0, -15); k.lineTo(13, -1); k.stroke(); k.restore(); }
+  const bw = 330, bx = w / 2 - bw / 2, by = 168;
+  k.globalAlpha = a; k.fillStyle = C.navy3; rr(k, bx, by, bw, 12, 6); k.fill();
+  const g = k.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, C.blue); g.addColorStop(1, C.mint);
+  k.fillStyle = g; rr(k, bx, by, Math.max(12, bw * (v / TARGET)), 12, 6); k.fill(); k.globalAlpha = 1;
+};

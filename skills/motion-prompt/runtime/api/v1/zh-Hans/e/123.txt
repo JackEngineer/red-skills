@@ -1,0 +1,46 @@
+// Motion Prompt #123 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#123
+//
+// 弹跳 / 英文名：Bounce
+// 素材包：motion2 (动态图形（第 2 弹）) · 元素 03 · 类别：动效技巧
+// 示例内容：小球落下后连续反弹，每次高度递减，最终停住。
+// 动效规格：
+//   - 每 2.35 s 落下一次，每 4.7 s 两次，先黄色、后珊瑚色。小球半径 26。
+//   - 从 0.1 s 开始，自地面上方 190 px 下落。重力 1900 px/s²，每次反弹保留 56% 速度（恢复系数 0.56），回弹速度低于 35 px/s 时停止。
+//   - 水平方向在 0.1–1.8 s 以三次方缓出从 x = 150→390 移动。
+//   - 每次撞击前后各 0.045 s 压缩，宽度 1 + sq，高度 1 − sq，sq 最大为 0.4 × min(1, 撞击速度 ÷ 850)。速度高于 200 px/s 的撞击会向左右闪出白色短线，持续 0.3 s。
+//   - 阴影随高度增加而缩小。退场：1.95–2.25 s，缩放乘以 (1 − backIn, s = 2)。
+// 适用场景：适合图标、文字或产品的下落与落地，表现重量和弹性。
+// 标签：弹跳、下落、重力、球体、物理效果、落地、缓动
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion2 -> ../../kit/motion2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#123
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 03
+const BNC = (() => { const g = 1900, e = 0.56, d = 190, t0 = Math.sqrt(2 * d / g), v0 = g * t0; const segs = []; let t = t0, v = v0 * e; while (v > 35) { segs.push({ t, v }); t += 2 * v / g; v *= e; } const imp = [{ t: t0, v: v0 }]; segs.forEach((s, i) => { if (i) imp.push({ t: s.t, v: segs[i - 1].v }); }); return { g, d, t0, segs, imp, end: t }; })();
+function bounceH(t) { const B = BNC; if (t < B.t0) return B.d - 0.5 * B.g * Math.max(0, t) * Math.max(0, t) * (t < 0 ? 0 : 1); for (const s of B.segs) { const tau = t - s.t; if (tau >= 0 && tau < 2 * s.v / B.g) return s.v * tau - 0.5 * B.g * tau * tau; } return 0; }
+CELLS[2] = (k, w, h, u) => {
+  u = snapU(u);
+  stage(k);
+  const T = CYC / 2, n = Math.floor(u / T), lu = u - n * T, t = lu - 0.1;
+  const floor = h - 26, R = 26, rest = floor - R, x = lerp(150, 390, eOut(P(lu, 0.1, 1.8)));
+  const hg = t < 0 ? BNC.d : bounceH(t), out = 1 - backIn(P(lu, 1.95, 2.25), 2);
+  k.fillStyle = C.navy3; rr(k, 26, floor, w - 52, 5, 2.5); k.fill();
+  let sq = 0;
+  for (const im of BNC.imp) {
+    const dtI = t - im.t;
+    if (Math.abs(dtI) < 0.045) sq = Math.max(sq, clamp(im.v / 850) * 0.4 * (1 - Math.abs(dtI) / 0.045));
+    if (dtI > 0 && dtI < 0.3 && im.v > 200) { const q = dtI / 0.3, ix = lerp(150, 390, eOut(P(im.t + 0.1, 0.1, 1.8))); k.strokeStyle = '#fff'; k.globalAlpha = 1 - q; k.lineWidth = 5; k.lineCap = 'round';[-1, 1].forEach(s => { k.beginPath(); k.moveTo(ix + s * (34 + 14 * q), floor - 6 - 8 * q); k.lineTo(ix + s * (48 + 22 * q), floor - 16 - 14 * q); k.stroke(); }); k.globalAlpha = 1; }
+  }
+  const sh = clamp(1 - hg / BNC.d);
+  k.fillStyle = 'rgba(0,0,0,.32)'; k.beginPath(); k.ellipse(x, floor + 7, R * (0.4 + 0.8 * sh) * out, 5 * (0.4 + 0.6 * sh) * out, 0, 0, 7); k.fill();
+  if (out > 0.01) {
+    k.save(); k.translate(x, rest - hg + R); k.scale((1 + sq) * out, (1 - sq) * out);
+    k.fillStyle = n ? C.coral : C.yel; k.beginPath(); k.arc(0, -R, R, 0, 7); k.fill();
+    k.fillStyle = 'rgba(255,255,255,.7)'; k.beginPath(); k.ellipse(-9, -R - 9, 8, 5, -0.6, 0, 7); k.fill();
+    k.restore();
+  }
+};

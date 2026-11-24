@@ -1,0 +1,37 @@
+// Motion Prompt #167 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#167
+//
+// 向下滚动提示 / 英文名：Scroll-down cue
+// 素材包：lp2 (落地页与网页效果（第 2 弹）) · 元素 23 · 类别：亮点展示
+// 示例内容：首屏下方的“向下滚动”文字、鼠标轮廓中的圆点和两侧箭头，持续重复向下运动。
+// 动效规格：
+//   - 视口 511 × 168。首屏下方中央显示“向下滚动”（11 px，字距 3 px）和鼠标轮廓（24 × 38，圆角 12，线宽 2.2）。每拍 1.57 s，每 4.7 s 三拍，每个 9.4 s 素材包周期六拍。
+//   - 内部橙色圆点（5 × 9）在每拍前 70% 下移 14 px（二次方缓入缓出），在 45%–75% 之间淡出，下一拍在顶部重新出现。
+//   - 左右各距 40 px 处，每侧有两个向下箭头（线宽 2.5），相隔半拍，向下漂移 24 px；不透明度随正弦变化，0 → 0.8 → 0。
+// 适用场景：适合首屏占满屏幕的页面，提示用户下方还有内容。
+// 标签：滚动引导、滚动提示、向下滚动、首屏主视觉、箭头、循环
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 lp2 -> ../../kit/lp2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#167
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 23
+CELLS[22] = (k, w, h, u) => {
+  u = snapU(u);
+  frame(k);
+  const T = CYC / 3, f = mod(u, T) / T;
+  view(k, () => {
+    k.fillStyle = '#FFF4EA'; k.fillRect(0, 0, VW, VH);
+    txt(k, '欢迎来到，', 40, 40, `800 22px ${JP}`, C.ink); txt(k, '山顶旅舍。', 40, 70, `800 22px ${JP}`, C.ink);
+    bars(k, 40, 84, 170, 2, '#EAD9CB');
+    pic(k, 286, 10, 200, 92, 1, 10);
+    const mx = VW / 2;
+    txt(k, '向下滚动', mx, 116, `800 11px ${EN}`, C.ink, 'center', 'middle', '3px');
+    k.strokeStyle = C.ink; k.lineWidth = 2.2; rr(k, mx - 12, 126, 24, 38, 12); k.stroke();
+    const dy = eIOs(clamp(f / 0.7)) * 14, da = 1 - clamp((f - 0.45) / 0.3);
+    k.fillStyle = `rgba(255,90,44,${da})`; rr(k, mx - 2.5, 133 + dy, 5, 9, 2.5); k.fill();
+    [mx - 40, mx + 40].forEach(x => { for (let j = 0; j < 2; j++) { const ff = mod(f + j * 0.5, 1), yy = 128 + ff * 24, al = Math.sin(Math.PI * ff); k.strokeStyle = `rgba(28,35,51,${0.8 * al})`; k.lineWidth = 2.5; k.lineCap = 'round'; k.lineJoin = 'round'; k.beginPath(); k.moveTo(x - 8, yy); k.lineTo(x, yy + 8); k.lineTo(x + 8, yy); k.stroke(); } });
+  });
+};

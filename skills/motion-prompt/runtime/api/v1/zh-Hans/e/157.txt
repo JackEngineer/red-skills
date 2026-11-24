@@ -1,0 +1,48 @@
+// Motion Prompt #157 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#157
+//
+// 悬停图片预览 / 英文名：Hover image reveal
+// 素材包：lp2 (落地页与网页效果（第 2 弹）) · 元素 13 · 类别：鼠标与输入交互
+// 示例内容：光标悬停于纯文字列表的一行时，该行照片在光标旁淡入，并跟随光标移动。
+// 动效规格：
+//   - 视口 511 × 168，纯文字列表四行，行高 39 px、名称字号 17 px。光标逐行向下移动，每行约 1 s。一次演示 4.7 s，每个 9.4 s 素材包周期内重复两次。
+//   - 悬停行：名称在 0.25 s 内右移 8 px（三次方缓出），名称和右侧箭头变橙；离开时在 0.25 s 内恢复。
+//   - 照片：该行的照片为 132 × 84、圆角 6、带投影，出现在光标右侧 26 px、略偏上方，垂直方向限制在窗口内部。
+//   - 同一段 0.25 s 内，照片不透明度从 0 增至 1，缩放从 0.85× 增至 1×。照片无滞后地跟随光标；切换到下一行时，旧照片淡出，新照片淡入。
+// 适用场景：适合保持轻量、纯文字形式的作品、项目或房源列表，同时让用户查看感兴趣条目的照片。
+// 标签：悬停、图片逐步显现、列表、光标跟随、预览、作品集
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 lp2 -> ../../kit/lp2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#157
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 13
+CELLS[12] = (k, w, h, u) => {
+  u = snapU(u);
+  frame(k);
+  const NAMES = ['极光山丘', '湖畔小屋', '海滨别墅', '星空露台'], RT = 6, RH = 39;
+  const cur = t => path([[0, 140, 200], [0.4, 150, 26], [1.15, 190, 28], [1.4, 205, 65], [2.15, 230, 67], [2.4, 245, 104], [3.15, 265, 106], [3.4, 280, 143], [3.9, 292, 144], [4.3, 150, 200], [4.7, 140, 200]], t);
+  const [cx, cy] = cur(u);
+  view(k, () => {
+    NAMES.forEach((s, i) => {
+      const top = RT + i * RH, inside = t => { const [a, b] = cur(t); return b > top && b < top + RH && a > 20 && a < 490; };
+      const q = trans(inside, u, 0.25);
+      txt(k, '0' + (i + 1), 30, top + 25, `800 12px ${EN}`, C.sub);
+      txt(k, s, 64 + 8 * q, top + 26, `800 17px ${JP}`, mix(C.ink, C.acc, q));
+      txt(k, '→', 476, top + 25, `700 15px ${EN}`, mix('#B7BFCC', C.acc, q), 'right');
+      k.fillStyle = C.rule; k.fillRect(24, top + RH, VW - 48, 1);
+    });
+    NAMES.forEach((s, i) => {
+      const top = RT + i * RH, q = trans(t => { const [a, b] = cur(t); return b > top && b < top + RH && a > 20 && a < 490; }, u, 0.25);
+      if (q <= 0) return;
+      const iw = 132, ih = 84, px = cx + 26, py = clamp(cy - 46, 4, VH - ih - 4), sc = 0.85 + 0.15 * q;
+      k.save(); k.globalAlpha = q; k.translate(px + iw / 2, py + ih / 2); k.scale(sc, sc);
+      k.shadowColor = 'rgba(28,35,51,.25)'; k.shadowBlur = 12; k.shadowOffsetY = 4; k.fillStyle = '#fff'; rr(k, -iw / 2, -ih / 2, iw, ih, 6); k.fill(); k.shadowColor = 'transparent';
+      pic(k, -iw / 2, -ih / 2, iw, ih, [0, 2, 1, 2][i], 6);
+      k.restore();
+    });
+    cursor(k, cx, cy);
+  });
+};

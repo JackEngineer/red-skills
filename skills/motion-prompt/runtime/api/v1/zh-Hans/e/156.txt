@@ -1,0 +1,50 @@
+// Motion Prompt #156 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#156
+//
+// 悬停文字翻滚 / 英文名：Text roll on hover
+// 素材包：lp2 (落地页与网页效果（第 2 弹）) · 元素 12 · 类别：鼠标与输入交互
+// 示例内容：光标悬停于菜单文字时，文字依次向上滚出，同样的橙色文字从下方滚入；光标离开后反向滚回。
+// 动效规格：
+//   - 视口 511 × 168，三项菜单文案为“精选作品”“关于我们”“联系我们”，字号 30 px、字重 800、字距 1 px。光标从左到右各停留约 0.85 s。一次演示 4.7 s，每个 9.4 s 素材包周期内重复两次。
+//   - 每个词的橙色副本位于其下方 40 px，两者均裁切在高 39 px 的框内（overflow: hidden）。
+//   - 悬停时，每个字错开 0.035 s，在 0.36 s 内上移 40 px 并移出（三次方缓入缓出），其橙色副本同时升入原位。
+//   - 离开时，各字以相同的错开间隔和时长向下滚回。
+// 适用场景：适合页头菜单或按钮，为简短文字链接增加可感知的响应。
+// 标签：文字翻滚、悬停、菜单、链接、交错动画、文字排版
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 lp2 -> ../../kit/lp2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#156
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 12
+CELLS[11] = (k, w, h, u) => {
+  u = snapU(u);
+  frame(k);
+  const LINKS = ['精选作品', '关于我们', '联系我们'], F = `800 30px ${EN}`, GAP = 44, LY = 100, LH = 40;
+  const cur = t => path([[0, 110, 200], [0.4, 120, 92], [1.25, 140, 96], [1.5, 252, 92], [2.35, 268, 96], [2.6, 380, 92], [3.45, 400, 96], [3.9, 450, 200], [4.7, 110, 200]], t);
+  view(k, () => {
+    k.fillStyle = '#FFF3EA'; k.fillRect(0, 0, VW, VH);
+    logo(k, 24, 28); txt(k, '菜单', VW - 26, 28.5, `800 11px ${EN}`, C.sub, 'right', 'middle', '2px');
+    k.font = F; k.letterSpacing = '1px'; const ws = LINKS.map(s => k.measureText(s).width); k.letterSpacing = '0px';
+    let x = (VW - ws.reduce((a, b) => a + b, 0) - GAP * (LINKS.length - 1)) / 2;
+    LINKS.forEach((s, i) => {
+      const x0 = x, x1 = x + ws[i], inside = t => { const [a, b] = cur(t); return a > x0 - 6 && a < x1 + 6 && b > LY - 30 && b < LY + 10; };
+      const on = inside(u), tc = lastSwitch(inside, u);
+      k.save(); k.beginPath(); k.rect(x0 - 4, LY - 31, ws[i] + 8, 39); k.clip();
+      let cxp = x0;
+      [...s].forEach((ch, j) => {
+        const f = tc === null ? (on ? 1 : 0) : eIO(P(u, tc + 0.035 * j, tc + 0.035 * j + 0.36)), q = on ? f : 1 - f;
+        k.font = F; k.letterSpacing = '1px'; const cw = k.measureText(ch).width; k.letterSpacing = '0px';
+        txt(k, ch, cxp, LY - LH * q, F, C.ink, 'left', 'alphabetic', '1px');
+        txt(k, ch, cxp, LY + LH - LH * q, F, C.acc, 'left', 'alphabetic', '1px');
+        cxp += cw;
+      });
+      k.restore();
+      x += ws[i] + GAP;
+    });
+    bars(k, VW / 2 - 110, 132, 220, 1, '#F1D9C9', 6);
+    const [cx, cy] = cur(u); cursor(k, cx, cy);
+  });
+};

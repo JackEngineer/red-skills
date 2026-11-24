@@ -1,0 +1,39 @@
+// Motion Prompt #078 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#078
+//
+// 滚动吸附 / 英文名：Scroll snap
+// 素材包：lp (落地页与网页效果) · 元素 06 · 类别：滚动效果
+// 示例内容：轻轻滚动后，页面会自动补足剩余距离，使下一区块的顶边与视口顶部对齐。
+// 动效规格：
+//   - 每个区块与视口等高（168 px）。第一块浅蓝色，第二块藏青色。
+//   - 每 2.4 s 吸附一次。0.45–0.85 s 用户只滚动 34 px（三次方缓出）。
+//   - 0.9–1.5 s 页面自行移动剩余的 134 px，使下一区块顶边对齐（三次方缓出）。
+//   - 后一个 2.4 s 以相同方式向上返回第一区块（scroll-snap-type: y mandatory 的行为）。
+// 适用场景：适合像幻灯片一样逐个整屏阅读的页面。
+// 标签：滚动吸附、吸附、整页、页面分区、CSS、强制吸附、滚动
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#078
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 06
+CELLS[5] = (k, w, h, u) => {
+  frame(k);
+  const T = CYC / 2, lu = mod(u, T), dir = u < T ? 1 : -1, from = u < T ? 0 : VH, DRIFT = 34;
+  const y = from + dir * (DRIFT * eOut(P(lu, 0.45, 0.85)) + (VH - DRIFT) * eOut(P(lu, 0.9, 1.5)));
+  view(k, () => {
+    k.save(); k.translate(0, -y);
+    for (let i = 0; i < 2; i++) {
+      const y0 = i * VH, dark = i === 1;
+      k.fillStyle = dark ? C.ink : C.blueL; k.fillRect(0, y0, VW, VH);
+      txt(k, '0' + (i + 1), 34, y0 + 70, `800 46px ${EN}`, C.acc);
+      txt(k, dark ? '立即体验' : '让更多人了解', 34, y0 + 102, `800 18px ${JP}`, dark ? '#fff' : C.ink);
+      bars(k, 34, y0 + 118, 170, 2, dark ? 'rgba(255,255,255,.3)' : '#C3CDEA');
+      pic(k, 262, y0 + 24, 220, 120, dark ? 2 : 0, 8);
+    }
+    k.restore();
+    sbar(k, y / VH, 0.5);
+  });
+};

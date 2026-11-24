@@ -1,0 +1,68 @@
+// Motion Prompt #228 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#228
+//
+// 雷达图 / 英文名：Radar chart
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 12 · 类别：展示数字的图表
+// 示例内容：在六轴蛛网状网格上，灰色多边形从中心展开，随后蓝色多边形展开并略有超调。
+// 动效规格：
+//   - 刻度：四个嵌套六边形，最大半径 86 px（最外层颜色较深），以及六条辐射轴，整个循环中保留
+//   - 对比：灰色多边形（数值 0.46–0.74，填充不透明度 0.22）在 0.4 s 至 1.1 s 从中心展开（ease-out）
+//   - 主体：蓝色多边形（数值 0.92、0.58、0.84、0.4、0.76、0.52；填充不透明度 0.28，轮廓 3 px，顶点带圆点）在 0.95 s 至 1.85 s 展开，以 55:45 混合 ease-out 和 ease-out-back，产生轻微超调
+//   - 结束：坐标轴和网格保留，仅数据在 4.15 s 至 4.55 s 淡出（单次循环 = 4.7 s）
+// 适用场景：适合比较多个指标的均衡程度，或比较两个对象的长处与短处。
+// 标签：雷达图、蛛网图、网状图、多边形、对比、技能、均衡
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#228
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 12
+const RA = [0.92, 0.58, 0.84, 0.4, 0.76, 0.52];
+const RB = [0.55, 0.74, 0.46, 0.72, 0.5, 0.66];
+function radarPath(k, cx, cy, R, vals, s) {
+  k.beginPath();
+  vals.forEach((v, i) => {
+    const a = -Math.PI / 2 + i / vals.length * Math.PI * 2, r = R * v * s;
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+    i ? k.lineTo(x, y) : k.moveTo(x, y);
+  });
+  k.closePath();
+}
+function radar(k, w, h, u) {
+  bg(k, w, h);
+  const cx = w / 2, cy = h / 2 + 2, R = 86, n = 6;
+  k.lineJoin = 'round';
+  for (let ring = 1; ring <= 4; ring++) {
+    radarPath(k, cx, cy, R, Array(n).fill(ring / 4), 1);
+    k.strokeStyle = ring === 4 ? C.g4 : C.g3; k.lineWidth = 2; k.stroke();
+  }
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + i / n * Math.PI * 2;
+    seg(k, cx, cy, cx + Math.cos(a) * R, cy + Math.sin(a) * R, C.g3, 2);
+    dot(k, cx + Math.cos(a) * R, cy + Math.sin(a) * R, 4, C.g4);
+  }
+  const fo = dataFade(u);
+  const sb = easeOut(P(u, 0.4, 1.1));
+  if (sb > 0.01) {
+    k.save(); k.globalAlpha = fo;
+    radarPath(k, cx, cy, R, RB, sb);
+    k.fillStyle = 'rgba(169,168,165,0.22)'; k.fill();
+    k.strokeStyle = C.g4; k.lineWidth = 2.5; k.stroke();
+    k.restore();
+  }
+  const qa = P(u, 0.95, 1.85), sa = lerp(easeOut(qa), easeOutBack(qa), 0.45);
+  if (sa > 0.01) {
+    k.save(); k.globalAlpha = fo;
+    radarPath(k, cx, cy, R, RA, sa);
+    k.fillStyle = 'rgba(47,107,235,0.28)'; k.fill();
+    k.strokeStyle = C.blue; k.lineWidth = 3; k.stroke();
+    RA.forEach((v, i) => {
+      const a = -Math.PI / 2 + i / n * Math.PI * 2, r = R * v * sa;
+      dot(k, cx + Math.cos(a) * r, cy + Math.sin(a) * r, 4.5, C.blue);
+    });
+    k.restore();
+  }
+}
+CELLS[11] = radar;

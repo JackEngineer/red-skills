@@ -1,0 +1,70 @@
+// Motion Prompt #238 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#238
+//
+// 泳道图 / 英文名：Swimlane diagram
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 22 · 类别：展示流程与全局的图
+// 示例内容：左侧标出三条泳道的名称：客户、销售和制作；步骤框在不同泳道中依次出现，以折线箭头连接。
+// 动效规格：
+//   - 泳道：三条高 60 px 的白色泳道，左侧 62 px 宽的列中显示灰色泳道名称（18 px），整个循环中保留
+//   - 方框：五个 56×30 px 的圆角框，从 x = 138 到 474，依次位于客户 → 销售 → 制作 → 销售 → 客户泳道；从 0.4 s 开始，间隔 0.38 s，各用 0.28 s 弹性出现（ease-out-back）；最后一个为深蓝色
+//   - 箭头：从前一个方框右边缘出发，先水平延伸再向上或向下接入下一个方框（深灰、2.5 px、头部 9 px），从各方框出现前 0.24 s 开始，用 0.26 s 生长
+//   - 区别于 #233 甘特图：没有日期刻度；通过泳道名称和跨泳道箭头表达流程
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合展示多人或多团队共同流程中，由谁在何时执行哪项工作。
+// 标签：泳道、泳道图、跨职能流程图、泳道、流程、职责分工、工作流程
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#238
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 22
+function swimlane(k, w, h, u) {
+  bg(k, w, h);
+  const f = fade(u), X0 = 22, X1 = 517, HW = 62, Y0 = 13, LH = 60, NL = 3;
+  const NAMES = ['客户', '销售', '制作'];
+  for (let i = 0; i < NL; i++) {
+    const y = Y0 + i * LH;
+    k.fillStyle = '#FFFFFF'; k.fillRect(X0 + HW, y, X1 - X0 - HW, LH);
+    k.fillStyle = C.g2; k.fillRect(X0, y, HW, LH);
+    txt(k, NAMES[i], X0 + HW / 2, y + LH / 2 + 1, `600 18px ${FONT}`, C.mark, 'center', 'middle');
+  }
+  k.strokeStyle = C.g3; k.lineWidth = 2;
+  for (let i = 1; i < NL; i++) { k.beginPath(); k.moveTo(X0, Y0 + i * LH); k.lineTo(X1, Y0 + i * LH); k.stroke(); }
+  k.beginPath(); k.moveTo(X0 + HW, Y0); k.lineTo(X0 + HW, Y0 + NL * LH); k.stroke();
+  rr(k, X0, Y0, X1 - X0, NL * LH, 6); k.stroke();
+  const BX = [138, 224, 310, 396, 474], BL = [0, 1, 2, 1, 0], bw = 56, bh = 30;
+  const cyOf = l => Y0 + l * LH + LH / 2;
+  k.globalAlpha = f;
+  for (let i = 0; i < BX.length; i++) {
+    const t0 = 0.4 + i * 0.38;
+    // 从上一框先向右画箭头，再向上或向下接入当前框。
+    if (i > 0) {
+      const pa = easeInOut(P(u, t0 - 0.24, t0 + 0.02));
+      if (pa > 0) {
+        const xs = BX[i - 1] + bw / 2, ys = cyOf(BL[i - 1]), xe = BX[i], ye0 = cyOf(BL[i]);
+        const down = ye0 > ys, ye = ye0 + (down ? -bh / 2 - 3 : bh / 2 + 3);
+        const l1 = xe - xs, l2 = Math.abs(ye - ys), tot = l1 + l2, d = pa * tot;
+        k.strokeStyle = C.mark; k.lineWidth = 2.5; k.lineCap = 'round'; k.lineJoin = 'round';
+        k.beginPath(); k.moveTo(xs, ys);
+        if (d <= l1) k.lineTo(xs + d, ys);
+        else { k.lineTo(xe, ys); k.lineTo(xe, ys + (down ? 1 : -1) * (d - l1)); }
+        k.stroke();
+        if (pa > 0.98) arrowTo(k, xe, ye, 0, down ? 1 : -1, 9, C.mark);
+      }
+    }
+    const pb = P(u, t0, t0 + 0.28);
+    if (pb > 0) {
+      const s = easeOutBack(pb), last = i === BX.length - 1, cy = cyOf(BL[i]);
+      k.save(); k.translate(BX[i], cy); k.scale(s, s);
+      k.fillStyle = last ? C.blue : C.blueL; k.strokeStyle = last ? C.blue : C.blueM; k.lineWidth = 2;
+      rr(k, -bw / 2, -bh / 2, bw, bh, 7); k.fill(); k.stroke();
+      k.fillStyle = last ? '#FFFFFF' : C.g4;
+      rr(k, -16, -3, 32, 6, 3); k.fill();
+      k.restore();
+    }
+  }
+  k.globalAlpha = 1;
+}
+CELLS[21] = swimlane;

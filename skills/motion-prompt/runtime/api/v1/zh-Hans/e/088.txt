@@ -1,0 +1,46 @@
+// Motion Prompt #088 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#088
+//
+// 离站挽留弹窗 / 英文名：Exit-intent popup
+// 素材包：lp (落地页与网页效果) · 元素 16 · 类别：悬停与点击交互
+// 示例内容：光标从页面上方向标签栏和关闭按钮移出时，页面变暗并弹出“请稍等！”窗口；点击 × 关闭。
+// 动效规格：
+//   - 光标在 0.7–1.25 s 从页面向浏览器地址栏上移（三次方缓入缓出）。
+//   - 光标越过视口顶边时触发（y = 0，约 1.07 s），与 document 上 mouseleave 且 clientY ≤ 0 的判断相同。
+//   - 触发后 0.05–0.45 s 展开（三次方缓出）：藏青色背景遮罩不透明度 0→0.5；弹窗（260 × 132，圆角 12）不透明度 0→1，缩放 0.9→1。
+//   - 内部包含标题、橙色优惠说明、优惠券按钮和右上角 ×。
+//   - 2.9 s 点击 ×；在此后 0.03–0.25 s 消失（线性）。
+// 适用场景：适合向即将离开、尚未完成转化的访客提供最后一次优惠。
+// 标签：离站意图、弹窗、鼠标移出、优惠券、转化、用户留存、落地页
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#088
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 16
+CELLS[15] = (k, w, h, u) => {
+  frame(k);
+  const OX = WIN.x, OY = WIN.y + WIN.bar;               // 光标会移到窗口外的标签栏和地址栏，因此用卡片坐标绘制。
+  const [cx, cy] = path([[0, 440, 150], [0.7, 300, 120], [1.25, 360, -18], [1.9, 372, -20], [2.6, 366, 38], [3.3, 366, 38], [4.4, 440, 150], [4.8, 440, 150]], u);
+  const CLOSE = 2.9;
+  let TRIG = 0.7; while (TRIG < 1.3 && path([[0.7, 300, 120], [1.25, 360, -18]], TRIG)[1] >= 0) TRIG += 1 / 240;   // 光标越过显示区域上边缘（y = 0）的时刻，约为第 1.07 秒。
+  const m = eOut(P(u, TRIG + 0.05, TRIG + 0.45)) * (1 - P(u, CLOSE + 0.03, CLOSE + 0.25));
+  const D = { x: 125.5, y: 18, w: 260, h: 132 };
+  view(k, () => {
+    header(k, 0);
+    pic(k, 24, 46, 222, 110, 0, 8); txt(k, '新手指南', 264, 82, `800 19px ${JP}`, C.ink); bars(k, 264, 96, 210, 3); btn(k, 264, 132, 100, 24, '立即申请');
+    if (m > 0) {
+      k.fillStyle = `rgba(28,35,51,${0.5 * m})`; k.fillRect(0, 0, VW, VH);
+      k.save(); k.globalAlpha = m; k.translate(D.x + D.w / 2, D.y + D.h / 2); const s = 0.9 + 0.1 * m; k.scale(s, s); k.translate(-D.w / 2, -D.h / 2);
+      k.fillStyle = '#fff'; rr(k, 0, 0, D.w, D.h, 12); k.fill();
+      txt(k, '请稍等！', D.w / 2, 34, `800 17px ${JP}`, C.ink, 'center');
+      txt(k, '首次使用立享九折', D.w / 2, 60, `800 15px ${JP}`, C.acc, 'center');
+      btn(k, D.w / 2 - 75, 80, 150, 30, '领取优惠券', C.acc, '#fff', 12);
+      k.strokeStyle = C.sub; k.lineWidth = 2; k.lineCap = 'round'; k.beginPath(); k.moveTo(D.w - 26, 14); k.lineTo(D.w - 14, 26); k.moveTo(D.w - 14, 14); k.lineTo(D.w - 26, 26); k.stroke();
+      k.restore();
+    }
+  });
+  k.save(); k.beginPath(); k.rect(0, 0, CW, CH); k.clip(); k.translate(OX, OY); click(k, cx, cy, u, [CLOSE]); k.restore();
+};

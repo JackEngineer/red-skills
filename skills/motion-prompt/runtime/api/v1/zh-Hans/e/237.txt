@@ -1,0 +1,49 @@
+// Motion Prompt #237 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#237
+//
+// 矩形树图 / 英文名：Treemap
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 21 · 类别：展示流程与全局的图
+// 示例内容：虚线外框中依次填入七个大小不同的矩形，最大的最先出现。
+// 动效规格：
+//   - 外框：439×172 px 的虚线轮廓（线段 6 px、间隔 6 px），整个循环中保留
+//   - 矩形：七个，圆角 5 px；先出现左侧的大矩形 A（206×172 px，深蓝），随后是 B（140×96 px）、C、D 和三个小矩形；使用深蓝、中蓝、浅蓝、灰色
+//   - 运动：从 0.4 s 开始，间隔 0.22 s，每个用 0.4 s 从 0.55× 放大到完整尺寸并略有超调（ease-out-back），同时淡入
+//   - 标签：A–D 的左上角标字母（A 为 24 px 白字，其余为 20 px）
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合一眼看出各部分在整体中所占的比例。
+// 标签：矩形树图、矩形树图、部分与整体、结构拆解、矩形、层级、份额
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#237
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 21
+function treemap(k, w, h, u) {
+  bg(k, w, h);
+  const f = fade(u);
+  const X0 = 50, Y0 = 18, X1 = 489, Y1 = 190;
+  k.strokeStyle = C.g3; k.lineWidth = 2; k.setLineDash([6, 6]);
+  rr(k, X0, Y0, X1 - X0, Y1 - Y0, 6); k.stroke(); k.setLineDash([]);
+  const RS = [                                  // 每项为 [横坐标, 纵坐标, 宽度, 高度, 颜色, 标签]。
+    [50, 18, 206, 172, C.blue, 'A'],
+    [260, 18, 140, 96, C.blueM, 'B'],
+    [404, 18, 85, 96, C.blueL, 'C'],
+    [260, 118, 98, 72, C.blueL, 'D'],
+    [362, 118, 70, 72, C.g3, ''],
+    [436, 118, 53, 34, C.g3, ''],
+    [436, 156, 53, 34, C.g4, ''],
+  ];
+  RS.forEach(([x, y, ww, hh, col, lb], i) => {
+    const p = P(u, 0.4 + i * 0.22, 0.8 + i * 0.22);
+    if (p <= 0) return;
+    const s = lerp(0.55, 1, easeOutBack(p));
+    k.save(); k.globalAlpha = f * Math.min(1, p * 2.5);
+    k.translate(x + ww / 2, y + hh / 2); k.scale(s, s);
+    k.fillStyle = col; rr(k, -ww / 2, -hh / 2, ww, hh, 5); k.fill();
+    if (lb) txt(k, lb, -ww / 2 + 12, -hh / 2 + 26, `700 ${i === 0 ? 24 : 20}px ${FONT}`, i === 0 ? '#FFFFFF' : C.mark, 'left');
+    k.restore();
+  });
+}
+CELLS[20] = treemap;

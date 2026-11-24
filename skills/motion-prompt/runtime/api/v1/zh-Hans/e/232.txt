@@ -1,0 +1,62 @@
+// Motion Prompt #232 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#232
+//
+// 百分比堆积条形图 / 英文名：100% stacked bar chart
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 16 · 类别：展示数字的图表
+// 示例内容：四条等长条形从左向右填满，虚线连接相邻条形的分段边界，第一段显示百分比。
+// 动效规格：
+//   - 条形：四条，长 390 px、高 28 px、间距 16 px；各分为四段（深蓝、中蓝、浅蓝、灰色），段间隙 2 px
+//   - 运动：从上到下，间隔 0.16 s，每条用 0.7 s 从左到右填满（cubic ease-in-out）
+//   - 虚线：灰色虚线（线段 4 px、间隔 4 px）连接相邻条形的相同分段边界，在 1.6 s 至 2.0 s 淡入
+//   - 百分比：每条第一段中部的白色数字（16 px），在该条开始后 0.75 s 起，用 0.25 s 淡入
+//   - 结束：坐标轴和网格保留，仅数据在 4.15 s 至 4.55 s 淡出（单次循环 = 4.7 s）
+// 适用场景：适合仅比较各组的构成比例，而不比较总量。
+// 标签：百分比堆积条形图、堆积条形图、百分比条、结构拆解、组成比例、份额、占比
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#232
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 16
+const BD = [[38, 27, 22, 13], [30, 34, 20, 16], [46, 24, 18, 12], [25, 31, 28, 16]];
+function band(k, w, h, u) {
+  bg(k, w, h);
+  const COL = [C.blue, C.blueM, C.blueL, C.g3];
+  const x0 = 100, bwid = 390, bh = 28, gap = 16, y0 = (h - (4 * bh + 3 * gap)) / 2;
+  for (let j = 0; j < 4; j++) { rr(k, 46, y0 + j * (bh + gap) + bh / 2 - 4, 36, 8, 4); k.fillStyle = C.g3; k.fill(); }
+  const fo = dataFade(u);
+  k.save(); k.globalAlpha = fo;
+  const edges = BD.map(r => { let a = 0; return r.map(v => (a += v, x0 + bwid * a / 100)); });
+  // 用虚线连接相邻条带的分界点。
+  const pg = easeInOut(P(u, 1.6, 2.0));
+  if (pg > 0) {
+    k.save(); k.globalAlpha = fo * pg;
+    for (let j = 0; j < 3; j++) for (let s = 0; s < 3; s++) {
+      seg(k, edges[j][s], y0 + j * (bh + gap) + bh + 2, edges[j + 1][s], y0 + (j + 1) * (bh + gap) - 2, C.g4, 1.8, [4, 4]);
+    }
+    k.restore();
+  }
+  BD.forEach((row, j) => {
+    const y = y0 + j * (bh + gap), t0 = 0.4 + j * 0.16, p = easeInOut(P(u, t0, t0 + 0.7));
+    if (p <= 0) return;
+    k.save(); k.beginPath(); k.rect(x0, y - 2, bwid * p, bh + 4); k.clip();
+    let a = x0;
+    row.forEach((v, s) => {
+      const ww = bwid * v / 100;
+      k.fillStyle = COL[s]; k.fillRect(a, y, ww, bh);
+      if (s) { k.fillStyle = C.stage; k.fillRect(a - 1, y, 2, bh); }
+      a += ww;
+    });
+    k.restore();
+    const pt = P(u, t0 + 0.75, t0 + 1.0);
+    if (pt > 0) {
+      k.save(); k.globalAlpha = fo * pt;
+      txt(k, `${row[0]}%`, x0 + bwid * row[0] / 200, y + bh / 2 + 1, `700 16px ${FONT}`, '#FFFFFF', 'center', 'middle');
+      k.restore();
+    }
+  });
+  k.restore();
+}
+CELLS[15] = band;

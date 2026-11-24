@@ -1,0 +1,41 @@
+// Motion Prompt #220 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#220
+//
+// 金字塔图 / 英文名：Pyramid diagram
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 04 · 类别：整理思路的图
+// 示例内容：四层三角形从底部向上搭起，每一层向下落到位；只有顶层为深蓝色。
+// 动效规格：
+//   - 形状：三角形从 y = 16 的顶点延伸至 y = 192 的底边，底宽 336 px，分为四层，层间距 6 px
+//   - 颜色由下至上：浅灰、浅蓝、中蓝、深蓝
+//   - 运动：从底层向上，间隔 0.32 s（0.4、0.72、1.04、1.36 s），每层用 0.4 s 向下移动 34 px 落到位，同时淡入（ease-out）
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合展示逐层奠基的阶段，或越往上规模越小的层级。
+// 标签：金字塔、金字塔图、层级、图层、层级、三角形、层叠
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#220
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 04
+function pyramid(k, w, h, u) {
+  bg(k, w, h);
+  k.globalAlpha = fade(u);
+  const top = 16, base = 192, hwB = 168, n = 4, gp = 6, cx = w / 2;
+  const th = (base - top - gp * (n - 1)) / n, half = y => hwB * (y - top) / (base - top);
+  const cols = [C.g3, C.blueL, C.blueM, C.blue];
+  for (let i = 0; i < n; i++) {                       // i = 0 对应最底层。
+    const p = easeOut(P(u, 0.4 + i * 0.32, 0.8 + i * 0.32));
+    if (p <= 0) continue;
+    const yb = base - i * (th + gp), yt = yb - th, dy = (1 - p) * -34;
+    k.save(); k.globalAlpha *= clamp(p * 1.6); k.translate(0, dy);
+    k.fillStyle = cols[i]; k.beginPath();
+    if (i === n - 1) { k.moveTo(cx, top); }
+    else { k.moveTo(cx - half(yt), yt); k.lineTo(cx + half(yt), yt); }
+    k.lineTo(cx + half(yb), yb); k.lineTo(cx - half(yb), yb); k.closePath(); k.fill();
+    k.restore();
+  }
+  k.globalAlpha = 1;
+}
+CELLS[3] = pyramid;

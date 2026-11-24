@@ -1,0 +1,24 @@
+// Motion Prompt #178 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#178
+//
+// 高角度镜头 / 英文名：High angle
+// 素材包：camera2 (镜头运动与转场（第 2 弹）) · 元素 10 · 类别：角度与构图
+// 示例内容：相机升高并向下俯拍，人物显得渺小，地面占据画面大部分。
+// 动效规格：
+//   - 相机：从 1.5 m 升至 4.5 m，同时俯仰角 0 → -0.5 rad（向下约 29°）；不前后移动。
+//   - 时间：0.6 s 至 2.2 s（1.6 s），三次缓入缓出（约为 cubic-bezier(0.65,0,0.35,1)）。
+//   - 主体：人物静止站在前方 5 m；相机向下看时，人物缩小并向下移动，地面网格占据画面大部分，地平线从顶部离开。
+//   - 保持：2.2 s 至 4.2 s 保持高角度（#031 升镜头持续升至 9 m；13 鸟瞰镜头 以 90° 垂直向下看）。
+//   - 返回：最后 0.5 s 交叉淡化回平视高度（单次 = 4.7 s）；右上角读数显示角度和高度（↘ 0° · 1.5m → ↘ 29° · 4.5m）。
+// 适用场景：适合让人物显得脆弱或渺小，或从上方交代局面。
+// 标签：高角度俯拍、俯拍、从上方拍摄、正上方俯拍、脆弱感、拍摄角度
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera2 -> ../../kit/camera2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#178
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 10
+CELLS[9] = shot(camCell((k, w, h, p) => world(k, w, h, cam({ y: lerp(1.5, 4.5, p), pitch: lerp(0, -0.5, p) }), { person: { z: 5 } }),
+  p => `↘ ${Math.round(lerp(0, 0.5, p) * 57.3)}° · ${lerp(1.5, 4.5, p).toFixed(1)}m`, 0.6, 2.2));

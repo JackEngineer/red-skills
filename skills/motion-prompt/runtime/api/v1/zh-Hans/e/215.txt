@@ -1,0 +1,22 @@
+// Motion Prompt #215 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#215
+//
+// 合成器浪潮（Synthwave） / 英文名：Synthwave
+// 素材包：artstyle (图像生成常用的画风名称) · 元素 23 · 类别：数字、立体与材质
+// 示例内容：同一张线稿变成 1980 年代的霓虹世界：地面是发光的紫色与青色网格，太阳是带横条纹的巨大落日，房屋和树以霓虹轮廓勾勒。
+// 动效规格：
+//   - 配色：紫色、青色和粉色霓虹
+//   - 外观：地面霓虹网格、带水平条纹的巨大落日、霓虹轮廓
+//   - 氛围：1980 年代复古未来主义
+//   - 示例：将同一张基础草图（山丘上的房屋、树和太阳的线稿）作为参考交给图像模型，按此风格重绘。0.5 s 至 1.35 s，以斜向擦除从草图切换为该风格；画面缓慢放大至 1.045x，持续到 4.0 s；4.0 s 至 4.5 s 淡回草图（单次循环 = 4.7 s，cubic ease-in-out）（此示例采用更高的裁切范围，以展示地面网格）
+// 适用场景：适合复古未来主义的音乐、游戏或活动视觉。
+// 标签：合成器浪潮、复古浪潮、20 世纪 80 年代、霓虹网格、复古霓虹竞速风、复古
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 artstyle -> ../../kit/artstyle.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#215
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 23
+CELLS[22] = (k, w, h, u) => gafu(k, w, h, u, '23');

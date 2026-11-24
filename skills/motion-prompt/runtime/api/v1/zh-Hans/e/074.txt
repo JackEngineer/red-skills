@@ -1,0 +1,44 @@
+// Motion Prompt #074 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#074
+//
+// 滚动淡入 / 英文名：Fade-in on scroll
+// 素材包：lp (落地页与网页效果) · 元素 02 · 类别：滚动效果
+// 示例内容：页面滚动时，标题、卡片和正文进入视口后，分别上移到位并淡入。
+// 动效规格：
+//   - 滚动：0.35–1.0 s 从 0→95 px，1.5–2.1 s 从 95→200 px，3.2–4.4 s 从 200→0（均为三次方缓入缓出）。
+//   - 触发线位于视口高度的 85%（距顶部 143 px）。元素上边缘越过触发线时启动动画，与 Intersection Observer 的思路一致。
+//   - 触发后，在 0.7 s 内，不透明度 0→1，下方偏移 28 px → 0（三次方缓出）。
+//   - 三个元素分别为标题（距页面顶部 172 px）、三张卡片组成的一行（206 px）和正文（334 px），起初均位于视口下方。同一行的卡片同时出现。
+//   - 向上返回时，元素从视口底部离开后在不可见处重置，下次再次播放。
+// 适用场景：适合较长的落地页，让内容随阅读滚动逐步出现。
+// 标签：淡入、滚动显现、滚动显现、交叉观察器、AOS 滚动动画、入场、滚动
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#074
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 02
+CELLS[1] = (k, w, h, u) => {
+  frame(k);
+  const SY = t => steps([[0.35, 0], [1.0, 95], [1.5, 95], [2.1, 200], [3.2, 200], [4.4, 0]], t), y = SY(u);
+  const LINE = VH * 0.85, DUR = 0.7, RISE = 28;
+  view(k, () => {
+    k.save(); k.translate(0, -y);
+    txt(k, '让生活更轻松。', 34, 52, `800 24px ${JP}`, C.ink); bars(k, 34, 68, 190, 3); btn(k, 34, 108, 96, 26, '了解详情');
+    pic(k, 286, 18, 196, 110, 0, 8);
+    const items = [
+      [172, () => txt(k, '选择我们的三个理由', VW / 2, 172 + 20, `800 18px ${JP}`, C.ink, 'center')],
+      [206, () => { for (let i = 0; i < 3; i++) { const x = 34 + i * 152; k.fillStyle = C.soft; rr(k, x, 206, 136, 106, 8); k.fill(); pic(k, x + 8, 214, 120, 56, i, 5); bars(k, x + 10, 280, 112, 2, '#CBD2DE'); } }],
+      [334, () => bars(k, 110, 334, 290, 3, C.faint, 7, 13)]
+    ];
+    for (const [top, draw] of items) {
+      const t0 = enteredAt(SY, top, LINE, u); if (t0 === null) continue;
+      const q = eOut(P(u, t0, t0 + DUR));
+      k.save(); k.globalAlpha = q; k.translate(0, RISE * (1 - q)); draw(); k.restore();
+    }
+    k.restore();
+    sbar(k, y / 200, 0.5);
+  });
+};

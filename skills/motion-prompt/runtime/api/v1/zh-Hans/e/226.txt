@@ -1,0 +1,44 @@
+// Motion Prompt #226 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#226
+//
+// 气泡图 / 英文名：Bubble chart
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 10 · 类别：展示数字的图表
+// 示例内容：五个大小不同的半透明圆在 L 形坐标轴上依次放大，只有最大的圆为深蓝色。
+// 动效规格：
+//   - 坐标轴：与 #225 散点图相同的 L 形坐标轴和网格线，整个循环中保留
+//   - 圆：五个，半径 14–44 px，半透明填充（不透明度 0.5；最大圆为深蓝色、不透明度 0.42），带同色的 2.5 px 轮廓
+//   - 运动：从 0.45 s 开始，间隔 0.24 s，每个用 0.5 s 放大并略有超调（ease-out-back）
+//   - 区别于 #225 散点图：只有少量数据点，圆的大小承载第三个数值
+//   - 结束：坐标轴和网格保留，仅数据在 4.15 s 至 4.55 s 淡出（单次循环 = 4.7 s）
+// 适用场景：适合同时比较三个数值，分别对应横向位置、纵向位置和大小。
+// 标签：气泡图、气泡、三变量、圆形大小、作品集、直角坐标图、数据
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#226
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 10
+const BB = [   // 前两项为绘图区内归一化到 0 至 1 的坐标，后两项为像素半径和高亮标记。
+  [0.16, 0.30, 18, 0], [0.34, 0.64, 34, 0], [0.53, 0.34, 25, 0], [0.67, 0.6, 44, 1], [0.89, 0.30, 14, 0],
+];
+function bubble(k, w, h, u) {
+  bg(k, w, h);
+  const A = SC; axes(k, A.x0, A.y0, A.x1, A.y1);
+  const fo = dataFade(u);
+  const X = x => lerp(A.x0 + 10, A.x1 - 8, x), Y = y => lerp(A.y1 - 8, A.y0 + 6, y);
+  BB.forEach(([bx, by, br, em], i) => {
+    const t0 = 0.45 + i * 0.24;
+    const r = br * easeOutBack(P(u, t0, t0 + 0.5));
+    if (r <= 0.3) return;
+    const col = em ? C.blue : C.blueM;
+    k.save(); k.globalAlpha = fo * (em ? 0.42 : 0.5);
+    dot(k, X(bx), Y(by), r, col);
+    k.restore();
+    k.save(); k.globalAlpha = fo; k.strokeStyle = col; k.lineWidth = 2.5;
+    k.beginPath(); k.arc(X(bx), Y(by), r, 0, Math.PI * 2); k.stroke();
+    k.restore();
+  });
+}
+CELLS[9] = bubble;

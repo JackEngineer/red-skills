@@ -1,0 +1,48 @@
+// Motion Prompt #076 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#076
+//
+// 滚动固定 / 英文名：Pinning
+// 素材包：lp (落地页与网页效果) · 元素 04 · 类别：滚动效果
+// 示例内容：藏青色区块填满视口后固定不动；继续滚动，数字和照片依次从 1→2→3 切换，随后区块继续滚走。
+// 动效规格：
+//   - 滚动：0.3–3.0 s 从 0→500 px，3.5–4.5 s 从 500→0（三次方缓入缓出）。
+//   - 区块高 168、藏青色，在滚动 110 px 时抵达顶部，并在随后的 300 px 滚动中保持固定（GSAP ScrollTrigger pin）。
+//   - 固定期间的进度：p = (scroll − 110) / 300。左侧长 124 的竖线随 p 逐渐填充橙色。
+//   - 在 p = 1/3 和 2/3 时（±0.07，三次方缓入缓出）切换下一步：数字（46 px）向上滚动 52 px，照片（226 × 124）向上滑动 124 px。
+//   - 经过 300 px 后解除固定，区块与下方白色区块一起向上滚动。
+// 适用场景：适合在同一屏内逐步介绍流程、功能或前后对比。
+// 标签：固定、滚动固定、GSAP 滚动触发、GSAP 动画、滚动驱动、步骤、叙事
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#076
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 04
+CELLS[3] = (k, w, h, u) => {
+  frame(k);
+  const y = steps([[0.3, 0], [3.0, 500], [3.5, 500], [4.5, 0]], u);
+  const PIN0 = 110, PD = 300;
+  const top = y < PIN0 ? PIN0 - y : y < PIN0 + PD ? 0 : PIN0 + PD - y, p = clamp((y - PIN0) / PD);
+  // 进度达到三分之一和三分之二时切换步骤，切换点前后 0.07 的范围内使用缓入缓出。
+  const f = eIO(P(p, 1 / 3 - 0.07, 1 / 3 + 0.07)) + eIO(P(p, 2 / 3 - 0.07, 2 / 3 + 0.07));
+  view(k, () => {
+    txt(k, '三步即可完成', 34, 56 - y, `800 22px ${JP}`, C.ink); bars(k, 34, 72 - y, 240, 2);
+    k.save(); k.translate(0, top);
+    k.fillStyle = C.ink; k.fillRect(0, 0, VW, VH);
+    txt(k, '步骤', 34, 40, `700 12px ${EN}`, 'rgba(255,255,255,.6)', 'left', 'alphabetic', '2px');
+    k.save(); k.beginPath(); k.rect(30, 46, 120, 52); k.clip();
+    for (let i = 0; i < 3; i++) txt(k, '0' + (i + 1), 32, 90 + (i - f) * 52, `800 46px ${EN}`, '#fff');
+    k.restore();
+    bars(k, 34, 110, 150, 3, 'rgba(255,255,255,.28)');
+    k.fillStyle = 'rgba(255,255,255,.16)'; rr(k, 232, 22, 4, 124, 2); k.fill();
+    k.fillStyle = C.acc; rr(k, 232, 22, 4, 124 * p, 2); k.fill();
+    k.save(); rr(k, 256, 22, 226, 124, 8); k.clip();
+    for (let i = 0; i < 3; i++) pic(k, 256, 22 + (i - f) * 124, 226, 124, i, 0);
+    k.restore();
+    k.fillStyle = '#fff'; k.fillRect(0, VH, VW, 200); bars(k, 34, VH + 30, 300, 3);
+    k.restore();
+    sbar(k, y / 500, 0.3);
+  });
+};

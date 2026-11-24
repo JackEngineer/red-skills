@@ -1,0 +1,47 @@
+// Motion Prompt #121 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#121
+//
+// 预备动作 / 英文名：Anticipation
+// 素材包：motion2 (动态图形（第 2 弹）) · 元素 01 · 类别：动效技巧
+// 示例内容：方形角色先向运动方向的反面后撤，压缩蓄力，再迅速冲向前方。
+// 动效规格：
+//   - 每 2.35 s 移动一次，每 4.7 s 两次，先从左向右，再从右向左。角色为珊瑚色圆角方块（86 px，圆角半径 24），带白色箭头，起点距边缘 108 px，地面位于 y = 178。
+//   - 蓄力：0.2–0.95 s，二次方缓入缓出。逆着行进方向后撤 44 px，压缩至宽 1.22 倍 × 高 0.76 倍，并向后倾斜 0.18 rad。
+//   - 冲出：0.95–1.38 s（0.43 s），从后撤位置移动至远端，使用 backOut (s = 1.1) 并略微过冲。前 60% 行程内沿半个正弦波拉伸至宽 1.55 倍 × 高 0.72 倍，并向前倾斜 0.08 rad。
+//   - 落定：从 1.38 s 开始，宽度和高度以相反方向波动，幅度 0.13·e^(−7t)·sin(17t)。
+//   - 冲出时，起点出现三团尘雾，在行程前 70% 内消失；身后出现三条黄色速度线，宽 8。
+// 适用场景：适合放在跳跃、冲刺或发射之前，营造蓄力感和重量感。
+// 标签：预备动作、蓄力动作、挤压、角色、跳跃、冲刺、动画原理
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion2 -> ../../kit/motion2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#121
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 01
+CELLS[0] = (k, w, h, u) => {
+  u = snapU(u);
+  stage(k);
+  const T = CYC / 2, n = Math.floor(u / T), lu = u - n * T, dir = n % 2 ? -1 : 1;
+  const XL = 108, XR = w - 108, xs = dir > 0 ? XL : XR, xe = dir > 0 ? XR : XL, floor = h - 30, S = 86, BACK = 44;
+  k.fillStyle = C.navy3; rr(k, 26, floor, w - 52, 5, 2.5); k.fill();
+  const wind = eIOs(P(lu, 0.2, 0.95)), go = P(lu, 0.95, 1.38);
+  let x, sx = 1, sy = 1, rot = 0;
+  if (go <= 0) { x = xs - dir * BACK * wind; sx = 1 + 0.22 * wind; sy = 1 - 0.24 * wind; rot = -dir * 0.18 * wind; }
+  else {
+    x = lerp(xs - dir * BACK, xe, backOut(go, 1.1));
+    const st = go < 0.6 ? Math.sin(Math.PI * go / 0.6) : 0;
+    sx = 1 + 0.55 * st; sy = 1 - 0.28 * st; rot = dir * 0.08 * st;
+    const land = lu - 1.38; if (land > 0) { const wob = 0.13 * Math.exp(-7 * land) * Math.sin(17 * land); sy = 1 - wob; sx = 1 + wob; }
+  }
+  if (go > 0 && go < 0.7) { const q = go / 0.7; k.fillStyle = C.dim; k.globalAlpha = 0.8 * (1 - q); for (let i = 0; i < 3; i++) { k.beginPath(); k.arc(xs - dir * (BACK + 30 + i * 22 + q * 30), floor - 8 - i * 6 - q * 10, 7 + q * 12 - i * 2, 0, 7); k.fill(); } k.globalAlpha = 1; }
+  k.fillStyle = 'rgba(0,0,0,.3)'; k.beginPath(); k.ellipse(x, floor + 8, S * 0.62 * sx, 6, 0, 0, 7); k.fill();
+  if (go > 0.02 && go < 0.8) { const a = 1 - go / 0.8; k.strokeStyle = C.yel; k.lineCap = 'round'; k.lineWidth = 8; k.globalAlpha = a;[0.28, 0.55, 0.8].forEach((f, i) => { const y = floor - S * sy * f, x0 = x - dir * (S * sx / 2 + 12), L = 120 * a + 20; k.beginPath(); k.moveTo(x0, y); k.lineTo(x0 - dir * L * (i === 1 ? 1 : 0.7), y); k.stroke(); }); k.globalAlpha = 1; }
+  k.save(); k.translate(x, floor); k.rotate(rot); k.scale(sx, sy);
+  k.fillStyle = C.coral; rr(k, -S / 2, -S, S, S, 24); k.fill();
+  k.fillStyle = 'rgba(255,255,255,.16)'; rr(k, -S / 2, -S, S, S / 2, [24, 24, 0, 0]); k.fill();
+  k.strokeStyle = '#fff'; k.lineWidth = 10; k.lineCap = 'round'; k.lineJoin = 'round';
+  k.beginPath(); k.moveTo(-dir * 12, -S / 2 - 20); k.lineTo(dir * 12, -S / 2); k.lineTo(-dir * 12, -S / 2 + 20); k.stroke();
+  k.restore();
+};

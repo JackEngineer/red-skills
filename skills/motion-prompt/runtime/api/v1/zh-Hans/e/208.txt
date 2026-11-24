@@ -1,0 +1,22 @@
+// Motion Prompt #208 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#208
+//
+// 线稿 / 英文名：Line art
+// 素材包：artstyle (图像生成常用的画风名称) · 元素 16 · 类别：平面设计风格
+// 示例内容：同一张线稿变成奶油色纸上用单支深海军蓝色笔绘制的精细线描，每块屋瓦、每片叶子、每根草和每束太阳光都用线条描出。
+// 动效规格：
+//   - 媒介：奶油色纸上使用单支深海军蓝色笔
+//   - 外观：仅用细线，描出全部细节，线条粗细有变化
+//   - 避免：色块填充和明暗铺色
+//   - 示例：将同一张基础草图（山丘上的房屋、树和太阳的线稿）作为参考交给图像模型，按此风格重绘。0.5 s 至 1.35 s，以斜向擦除从草图切换为该风格；画面缓慢放大至 1.045x，持续到 4.0 s；4.0 s 至 4.5 s 淡回草图（单次循环 = 4.7 s，cubic ease-in-out）
+// 适用场景：适合需要展示线条之美的涂色页、野外图鉴或包装。
+// 标签：线稿、钢笔画、墨水、轮廓、等宽线条、绘画
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 artstyle -> ../../kit/artstyle.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#208
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 16
+CELLS[15] = (k, w, h, u) => gafu(k, w, h, u, '16');

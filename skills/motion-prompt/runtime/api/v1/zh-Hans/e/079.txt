@@ -1,0 +1,36 @@
+// Motion Prompt #079 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#079
+//
+// 滚动进度条 / 英文名：Scroll progress bar
+// 素材包：lp (落地页与网页效果) · 元素 07 · 类别：滚动效果
+// 示例内容：逐段阅读文章时，顶部细线从左向右增长，到达页面底部时铺满整条。
+// 动效规格：
+//   - 文章分四次、每次 110 px，从 0→430 px 滚动；每次移动 0.45 s，停顿 0.4 s（三次方缓入缓出）。
+//   - 3.75–4.55 s 从 430→0 返回。
+//   - 视口顶部有高 6 px 的进度条，浅灰轨道、橙色填充。
+//   - 填充宽度 = 511 px × scroll / 430，即滚动进度本身（与 CSS animation-timeline: scroll() 一致）。
+// 适用场景：适合长文章，显示还有多少内容未读。
+// 标签：进度条、阅读进度、滚动进度、指示器、滚动驱动、文章
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#079
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 07
+CELLS[6] = (k, w, h, u) => {
+  frame(k);
+  const MAX = 430;
+  const y = steps([[0.3, 0], [0.75, 110], [1.15, 110], [1.6, 220], [2.0, 220], [2.45, 330], [2.85, 330], [3.3, MAX], [3.75, MAX], [4.55, 0]], u);
+  view(k, () => {
+    k.save(); k.translate(0, -y);
+    txt(k, '网页设计入门', 70, 44, `800 20px ${JP}`, C.ink); bars(k, 70, 56, 120, 1, C.faint, 5);
+    pic(k, 70, 74, 371, 112, 0, 8);
+    for (let b = 0; b < 4; b++) { const y0 = 204 + b * 82; k.fillStyle = C.ink; rr(k, 70, y0, 140, 9, 4.5); k.fill(); bars(k, 70, y0 + 22, 371, 4, C.faint, 6, 12); }
+    k.restore();
+    k.fillStyle = C.faint; k.fillRect(0, 0, VW, 6);
+    k.fillStyle = C.acc; k.fillRect(0, 0, VW * (y / MAX), 6);
+    sbar(k, y / MAX, 0.3);
+  });
+};

@@ -1,0 +1,35 @@
+// Motion Prompt #018 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#018
+//
+// 图形转场 / 英文名：Shape transition
+// 素材包：motion (动态图形) · 元素 18 · 类别：转场与强调
+// 示例内容：彩色条带扫过并覆盖画面，离开时露出下一个场景。
+// 动效规格：
+//   - 白天 → 夜晚 → 白天，每段 2.35 s。四条水平条带（高 52，蓝色、珊瑚色、黄色、薄荷绿），端部倾斜 80 px。
+//   - 覆盖：0.38–1.0 s。每条带的前缘从画面一侧移动到另一侧；各条带依次延迟阶段时长的 14%，并在阶段时长的 58% 内使用三次方缓入缓出。
+//   - 1.0 s 完全覆盖画面时，底下的场景切换为下一场景。
+//   - 揭开：1.12–1.75 s。每条带的后缘以相同延迟和曲线跟随，露出下一场景。
+//   - 方向：白天→夜晚从左到右，夜晚→白天镜像反向。
+// 适用场景：适合用品牌色形状切换场景，例如章节分隔或话题切换。
+// 标签：图形转场、转场、划像转场、条带、条纹、覆盖、场景切换
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion -> ../../kit/motion.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#018
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 18
+CELLS[17] = abCell((k, w, h, u, a, b) => {
+  const p1 = P(u, TA - 0.12, TA + 0.5), p2 = P(u, TA + 0.62, TA + 1.25), N = 4, sk = 80;
+  SCR[p1 >= 1 ? b : a](k, w, h);
+  const cols = [C.blue, C.coral, C.yel, C.mint];
+  for (let i = 0; i < N; i++) {
+    const d = i * 0.14, e1 = eIO(clamp((p1 - d) / (1 - 0.42))), e2 = eIO(clamp((p2 - d) / (1 - 0.42)));
+    if (e1 <= 0 || e2 >= 1) continue;
+    const bh = h / N + 1, y = i * h / N, span = w + sk + 20, dir = a === 0 ? 1 : -1;
+    let xa = -sk - 10 + e2 * span, xb = -sk - 10 + e1 * span;
+    k.save(); if (dir < 0) { k.translate(w, 0); k.scale(-1, 1); }
+    k.fillStyle = cols[i]; k.beginPath(); k.moveTo(xa + sk, y); k.lineTo(xb + sk, y); k.lineTo(xb, y + bh); k.lineTo(xa, y + bh); k.closePath(); k.fill(); k.restore();
+  }
+});

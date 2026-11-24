@@ -1,0 +1,42 @@
+// Motion Prompt #091 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#091
+//
+// 无限滚动 / 英文名：Infinite scroll
+// 素材包：lp (落地页与网页效果) · 元素 19 · 类别：加载、导航与循环动效
+// 示例内容：向下滚到列表末尾时出现旋转加载指示器，随后追加三个项目，可以继续阅读。
+// 动效规格：
+//   - 列表项为 331 × 44、圆角 8、间距 52，最后一项下方有加载指示器（半径 10，每 0.8 s 一圈）。
+//   - 滚动：0.25–0.85 s 从 38→116 px，1.15–1.75 s 从 116→194 px（三次方缓入缓出）；停下时列表末尾位于视口内。
+//   - 2.6 s 加入三个项目：各在 0.35 s 内从 0→1 淡入，并从下方 10 px 升起（三次方缓出）。加载指示器移至新的列表末尾。
+//   - 每个循环向前推进三个项目（156 px）。内容每三个项目重复，因此循环结尾与开头看起来相同。
+// 适用场景：适合信息流和新闻列表，让用户持续阅读而无需翻页。
+// 标签：无限滚动、无限滚动、加载更多、信息流、分页、加载转圈、列表
+// 尺寸：539x208 px · 循环时长：4.8 秒
+// 依赖：共用辅助代码 lp -> ../../kit/lp.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#091
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 19
+CELLS[18] = (k, w, h, u) => {
+  frame(k);
+  // 每轮滚动 3 条（156 像素）。列表每 3 条重复，保证循环首尾一致。
+  const PITCH = 52, BATCH = 3, L0 = 6, TL = 2.6;
+  const y = steps([[0.25, 38], [0.85, 116], [1.15, 116], [1.75, 194], [4.8, 194]], u);
+  const n = u < TL ? L0 : L0 + BATCH, end = 10 + n * PITCH;
+  view(k, () => {
+    k.fillStyle = C.soft; k.fillRect(0, 0, VW, VH);
+    k.save(); k.translate(0, -y);
+    for (let i = 0; i < n; i++) {
+      const top = 10 + i * PITCH, v = i % 3, fresh = i >= L0 ? eOut(P(u, TL, TL + 0.35)) : 1;
+      if (top - y > VH || top + 44 - y < 0) continue;
+      k.save(); k.globalAlpha = fresh; k.translate(0, 10 * (1 - fresh));
+      k.fillStyle = '#fff'; rr(k, 90, top, 331, 44, 8); k.fill(); pic(k, 98, top + 6, 48, 32, v, 5);
+      bars(k, 158, top + 12, [180, 140, 200][v], 1, C.ink, 7); bars(k, 158, top + 26, [120, 150, 100][v], 1, C.faint, 6);
+      k.restore();
+    }
+    spinner(k, VW / 2, end + 18, 10, u);
+    k.restore();
+  });
+};

@@ -1,0 +1,49 @@
+// Motion Prompt #006 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#006
+//
+// 打字机效果 / 英文名：Typewriter
+// 素材包：motion (动态图形) · 元素 06 · 类别：入场与文字
+// 示例内容：输入框中的文字逐字键入，随后发送按钮亮起并被按下。
+// 动效规格：
+//   - 每轮 4.7 s。白色输入框（471 × 92，圆角半径 30）中出现九个字符，从 0.3 s 开始每 0.24 s 一个，到 2.46 s 输入完毕。
+//   - 每个新字符从 1.35 倍回落至 1 倍：1 + 0.35·e^(−16t)。
+//   - 光标（珊瑚色，5 × 44）位于最后一个字符之后；输入期间常亮，其余时间以 0.94 s 为周期闪烁（亮 0.5 s）。
+//   - 发送按钮（半径 30）：初始为灰色，蓝色圆盘从 2.58 s 起以弹簧曲线 1 − e^(−6.5t)·cos(15t) 出现。
+//   - 按下：按钮在 2.96–3.21 s 最多缩小 20%（半个正弦波）。文字在 3.13–3.41 s 上移 70 px 并淡出。
+//   - 文字淡出一半后，光标回到起点（约 3.27 s）；蓝色在 3.51–3.81 s 淡出。
+// 适用场景：适合展示提示词、搜索词或聊天消息的输入过程。
+// 标签：打字机效果、打字动画、文字、光标、输入、提示文字、聊天、逐字显现
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 motion -> ../../kit/motion.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#006
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 06
+CELLS[5] = (k, w, h, u) => {
+  stage(k);
+  const S = '帮我制作猫咪视频', N = [...S].length, t0 = 0.3, dt = 0.24, done = t0 + N * dt;
+  const BX = 34, BY = 58, BW = w - 68, BH = 92;
+  const sendT = done + 0.55, clr = P(u, sendT + 0.12, sendT + 0.4);
+  k.fillStyle = '#fff'; rr(k, BX, BY, BW, BH, 30); k.fill();
+  const f = `600 36px ${JP}`; k.font = f;
+  let n = clamp(Math.floor((u - t0) / dt) + 1, 0, N); if (u < t0) n = 0;
+  let x = BX + 32; const y = BY + BH / 2 + 2;
+  k.save(); rr(k, BX, BY, BW - 86, BH, 30); k.clip();
+  [...S].slice(0, n).forEach((ch, i) => {
+    const age = u - (t0 + i * dt), pop = 1 + 0.35 * Math.exp(-age * 16), cw = k.measureText(ch).width;
+    k.save(); k.translate(x + cw / 2, y - clr * 70); k.scale(pop, pop); k.globalAlpha = 1 - clr;
+    txt(k, ch, 0, 0, f, C.navy, 'center', 'middle'); k.restore(); k.font = f; x += cw + 1;
+  });
+  k.restore();
+  if (clr > 0.5) x = BX + 32;
+  // 输入时光标常亮，等待时每 0.94 秒闪烁一次。
+  const typing = u >= t0 - 0.05 && u < done + 0.1, blink = typing ? 1 : (mod(u, 0.94) < 0.5 ? 1 : 0);
+  if (blink) { k.fillStyle = C.coral; rr(k, x + 4, y - 23, 5, 44, 2.5); k.fill(); }
+  const on = spring(u - done - 0.12, 15, 6.5) * (1 - P(u, sendT + 0.5, sendT + 0.8)), press = 1 - 0.2 * Math.sin(Math.PI * P(u, sendT - 0.05, sendT + 0.2));
+  const bx = BX + BW - 48, by = BY + BH / 2;
+  k.fillStyle = '#DDE3F3'; k.beginPath(); k.arc(bx, by, 30, 0, 7); k.fill();
+  if (on > 0.01) { k.fillStyle = C.blue; k.beginPath(); k.arc(bx, by, 30 * Math.min(on, 1.25) * press, 0, 7); k.fill(); }
+  k.strokeStyle = '#fff'; k.lineWidth = 6; k.lineCap = 'round'; k.lineJoin = 'round'; k.beginPath(); k.moveTo(bx, by + 12); k.lineTo(bx, by - 12); k.moveTo(bx - 11, by - 2); k.lineTo(bx, by - 13); k.lineTo(bx + 11, by - 2); k.stroke();
+};

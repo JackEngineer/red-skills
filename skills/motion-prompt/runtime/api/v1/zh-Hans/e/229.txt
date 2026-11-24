@@ -1,0 +1,51 @@
+// Motion Prompt #229 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#229
+//
+// 仪表图 / 英文名：Gauge chart
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 13 · 类别：展示数字的图表
+// 示例内容：半圆仪表的指针越过目标后摆动，最终停在 72%；蓝色弧带和数值随指针变化。
+// 动效规格：
+//   - 表盘：半径 120 px、厚 30 px 的灰色半圆弧带，每 10% 有一个刻度（0、50 和 100% 处较长）
+//   - 指针：0.5 s 开始，遵循阻尼弹簧 1 − e^(−3.2t)·cos(7.5t)，先越过目标再摆动，最终停在 72%
+//   - 弧带与数值：弧带填蓝至指针处，下方百分比（26 px）与指针同步
+//   - 结束：4.1 s 至 4.5 s，指针、弧带和数值回到 0%（cubic ease-in-out；单次循环 = 4.7 s）
+// 适用场景：适合用一个数值展示距离目标的进度。
+// 标签：仪表、仪表图、速度表、表盘、关键绩效指标、进度、指针
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#229
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 13
+function gauge(k, w, h, u) {
+  bg(k, w, h);
+  const cx = w / 2, cy = 152, R = 120, T = 30, V = 0.72;
+  const t = Math.max(0, u - 0.5);
+  const s = u <= 0.5 ? 0 : 1 - Math.exp(-3.2 * t) * Math.cos(7.5 * t);
+  const f = V * s * (1 - easeInOut(P(u, 4.1, 4.5)));
+  k.lineCap = 'butt';
+  k.strokeStyle = C.g2; k.lineWidth = T;
+  k.beginPath(); k.arc(cx, cy, R - T / 2, Math.PI, Math.PI * 2); k.stroke();
+  if (f > 0.002) {
+    k.strokeStyle = C.blue; k.lineWidth = T;
+    k.beginPath(); k.arc(cx, cy, R - T / 2, Math.PI, Math.PI + Math.PI * f); k.stroke();
+  }
+  for (let i = 0; i <= 10; i++) {
+    const a = Math.PI + Math.PI * i / 10, r0 = R - T - 12, r1 = R - T - (i % 5 === 0 ? 24 : 18);
+    seg(k, cx + Math.cos(a) * r0, cy + Math.sin(a) * r0, cx + Math.cos(a) * r1, cy + Math.sin(a) * r1, C.g4, 2.5);
+  }
+  const a = Math.PI + Math.PI * f, L = R - 22, bw = 7;
+  const ca = Math.cos(a), sa = Math.sin(a);
+  k.fillStyle = C.mark; k.beginPath();
+  k.moveTo(cx + ca * L, cy + sa * L);
+  k.lineTo(cx - sa * bw, cy + ca * bw);
+  k.lineTo(cx - ca * 12, cy - sa * 12);
+  k.lineTo(cx + sa * bw, cy - ca * bw);
+  k.closePath(); k.fill();
+  dot(k, cx, cy, 13, C.mark);
+  dot(k, cx, cy, 5, C.stage);
+  txt(k, `${Math.round(f * 100)}%`, cx, cy + 36, `700 26px ${FONT}`, C.mark, 'center', 'middle');
+}
+CELLS[12] = gauge;

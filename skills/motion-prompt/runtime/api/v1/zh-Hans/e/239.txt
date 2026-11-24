@@ -1,0 +1,50 @@
+// Motion Prompt #239 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#239
+//
+// V 形流程图 / 英文名：Chevron process
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 23 · 类别：展示流程与全局的图
+// 示例内容：箭头形的步骤 1 至 5 从左侧依次滑入，各步骤下方带简短说明，蓝色向右逐渐加深。
+// 动效规格：
+//   - 形状：五个燕尾箭头，宽 104 px、高 74 px（尖端深 24 px，间距 6 px）；从第二个起，左侧有凹口以衔接前一个
+//   - 颜色：浅蓝、浅蓝、中蓝、中蓝、深蓝，中部显示数字 1–5（24 px）
+//   - 运动：从 0.4 s 开始，间隔 0.3 s，每个用 0.42 s 从左侧 34 px 处滑入，同时淡入（ease-out）
+//   - 说明：各步骤下方两条灰条（长 62 px 和 44 px），在步骤开始后 0.25 s 起，用 0.3 s 淡入
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合在一行中展示连续步骤，例如培训安排或分阶段上线流程。
+// 标签：V 形箭头、箭头式流程图、流程箭头、步骤、阶段、SmartArt 图形、路线图
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#239
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 23
+function chevron(k, w, h, u) {
+  bg(k, w, h);
+  const f = fade(u), n = 5, cw = 104, dp = 24, gp = 6, step = cw - dp + gp;
+  const tot = n * step - gp + dp, x0 = (w - tot) / 2, y0 = 40, ch = 74, ym = y0 + ch / 2;
+  const COL = [C.blueL, C.blueL, C.blueM, C.blueM, C.blue];
+  for (let i = 0; i < n; i++) {
+    const t0 = 0.4 + i * 0.3, p = appear(u, t0, 0.42);
+    if (p <= 0) continue;
+    const x = x0 + i * step - (1 - p) * 34;
+    k.globalAlpha = f * Math.min(1, p * 1.6);
+    k.fillStyle = COL[i];
+    k.beginPath();
+    k.moveTo(x, y0); k.lineTo(x + cw - dp, y0); k.lineTo(x + cw, ym); k.lineTo(x + cw - dp, y0 + ch); k.lineTo(x, y0 + ch);
+    if (i > 0) k.lineTo(x + dp, ym);
+    k.closePath(); k.fill();
+    const tx = x + (i > 0 ? dp : 0) / 2 + (cw - dp) / 2 + (i > 0 ? 0 : -2);
+    txt(k, String(i + 1), tx + 4, ym + 1, `700 24px ${FONT}`, i === n - 1 ? '#FFFFFF' : C.mark, 'center', 'middle');
+    const pn = P(u, t0 + 0.25, t0 + 0.55);
+    if (pn > 0) {
+      k.globalAlpha = f * pn; k.fillStyle = C.g3;
+      const bx = x0 + i * step + (i > 0 ? dp : 0) + 4;
+      rr(k, bx, y0 + ch + 20, 62, 8, 4); k.fill();
+      rr(k, bx, y0 + ch + 36, 44, 8, 4); k.fill();
+    }
+  }
+  k.globalAlpha = 1;
+}
+CELLS[22] = chevron;

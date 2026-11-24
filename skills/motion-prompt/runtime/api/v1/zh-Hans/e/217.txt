@@ -1,0 +1,40 @@
+// Motion Prompt #217 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#217
+//
+// 维恩图 / 英文名：Venn diagram
+// 素材包：diagram (资料中常用的图解与图表名称) · 元素 01 · 类别：整理思路的图
+// 示例内容：两个圆从两侧滑入并重叠，只有交集部分变为深蓝色。
+// 动效规格：
+//   - 圆：两个半径 78 px 的圆；左侧 A 为浅蓝填充、蓝色轮廓，右侧 B 为浅灰填充、灰色轮廓；仅重叠区域填充深蓝色
+//   - 运动：0.3 s 至 0.7 s 淡入（ease-out）；随后在 0.5 s 至 1.6 s，两个圆心相对画面中点的位置从 ±150 px 移至 ±44 px（cubic ease-in-out）
+//   - 标签：A 和 B（26 px）位于各圆靠外侧的位置
+//   - #240 同心圆图将圆逐层嵌套；维恩图则把圆并排放置，仅部分重叠
+//   - 结束：整个图形在 4.1 s 至 4.5 s 淡出，卡片保持空白，直到 4.7 s 循环重新开始
+// 适用场景：适合在一张幻灯片中展示两个或多个事物的共同点与差异。
+// 标签：维恩、维恩图、重叠、交集、对比、共同点、圆形
+// 尺寸：539x208 px · 循环时长：4.7 秒
+// 依赖：共用辅助代码 diagram -> ../../kit/diagram.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#217
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 01
+function venn(k, w, h, u) {
+  bg(k, w, h);
+  const app = easeOut(P(u, 0.3, 0.7)), m = easeInOut(P(u, 0.5, 1.6));
+  if (app <= 0) return;
+  const r = 78, cy = h / 2, d = lerp(150, 44, m), ax = w / 2 - d, bx = w / 2 + d;
+  k.save(); k.globalAlpha = fade(u) * app;
+  k.fillStyle = C.blueL; k.beginPath(); k.arc(ax, cy, r, 0, TAU); k.fill();
+  k.fillStyle = C.g2; k.beginPath(); k.arc(bx, cy, r, 0, TAU); k.fill();
+  // 将 B 裁剪到 A 的范围内，只为交集着色。
+  k.save(); k.beginPath(); k.arc(ax, cy, r, 0, TAU); k.clip();
+  k.fillStyle = C.blue; k.beginPath(); k.arc(bx, cy, r, 0, TAU); k.fill(); k.restore();
+  pen(k, C.blueM, 3); k.beginPath(); k.arc(ax, cy, r, 0, TAU); k.stroke();
+  pen(k, C.g4, 3); k.beginPath(); k.arc(bx, cy, r, 0, TAU); k.stroke();
+  txt(k, 'A', ax - 38, cy + 1, `600 26px ${FONT}`, C.blue, 'center', 'middle');
+  txt(k, 'B', bx + 38, cy + 1, `600 26px ${FONT}`, C.mark, 'center', 'middle');
+  k.restore();
+}
+CELLS[0] = venn;

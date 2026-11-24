@@ -1,0 +1,34 @@
+// Motion Prompt #043 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#043
+//
+// 甩镜头转场 / 英文名：Whip pan
+// 素材包：camera (镜头运动与转场) · 元素 19 · 类别：转场
+// 示例内容：相机快速横向甩动，在条纹状模糊最强时切入下一场景。
+// 动效规格：
+//   - 衔接：1.7 s 至 2.5 s，历时 0.8 s；前 0.4 s 甩走前镜头，后 0.4 s 甩入后镜头并停稳。
+//   - 前半段：前镜头偏航角 0 → +0.45 rad，约 26°，二次方缓入缓出；后半段：后镜头偏航角 -0.45 rad → 0，缓动相同。
+//   - 切换：在 50% 处直接替换，此时模糊最强，将切换隐藏。
+//   - 模糊：对分布在 ±1.6 帧范围内的 9 次渲染取平均，帧率 30 fps。
+//   - 相机：高 1.4 m，除甩动阶段外固定；主体均不动，A 为人物，B 为汽车和城市。
+//   - 每 4.7 s 在 A→B 和 B→A 间交替，往返 9.4 s；右上角显示“A → B” / “B → A”。
+// 适用场景：适合在保持活力的同时切换地点或话题。
+// 标签：甩镜头、快速甩镜、运动模糊、快速横摇、转场、动感
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera -> ../../kit/camera.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#043
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 19
+CELLS[18] = shot(abCell((k, w, h, u, A, B) => {
+  const t0 = 1.7, t1 = 2.5;
+  const at = (kk, s) => {   // s 为转场进度，范围为 0 到 1。前半段镜头从 A 向右快速摇移，后半段镜头从左进入 B 并停下。
+    if (s < .5) world(kk, w, h, cam({ y: 1.4, yaw: eIOs(s * 2) * 0.45 }), A === sceneA ? { person: { x: -0.6, z: 7 } } : SB);
+    else world(kk, w, h, cam({ y: 1.4, yaw: -(1 - eIOs((s - .5) * 2)) * 0.45 }), B === sceneA ? { person: { x: -0.6, z: 7 } } : SB);
+  };
+  if (u < t0) return A(k, w, h);
+  if (u > t1) return B(k, w, h);
+  const s = P(u, t0, t1), ds = 1 / FPS / (t1 - t0);
+  mblur(k, at, clamp(s - ds * 1.6), clamp(s + ds * 1.6), 9);
+}));

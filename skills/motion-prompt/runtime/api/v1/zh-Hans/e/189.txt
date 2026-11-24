@@ -1,0 +1,34 @@
+// Motion Prompt #189 · MIT License (c) 2026 Shohei Ohtaki · https://showheyohtaki.github.io/motion-prompt/#189
+//
+// 切出镜头 / 英文名：Cutaway
+// 素材包：camera2 (镜头运动与转场（第 2 弹）) · 元素 21 · 类别：转场与剪辑
+// 示例内容：镜头从讲话者切到聆听的观众，再切回来；插入的是不同主体。
+// 动效规格：
+//   - 衔接：两次硬切（0 帧）；1.7 s 切到另一主体，3.0 s 回到原场景（离开 1.3 s）。
+//   - 主镜头（A）：相机固定（高度 1.4 m）；5.5 m 处的人物讲话，手臂和腿按 0.45·sin(u×6) rad 摆动，右侧 0.9 m 有灰色讲台。
+//   - 切出的主体：聆听的观众，五个人位于 3.1–4.6 m 处，穿蓝色和浅蓝色服装，双臂举起，按 |sin(t×9+i)|×5 cm 弹动；没有背景（位于另一地点）。
+//   - 底部条带：A（灰色）、另一主体（蓝色）、A（灰色），带播放头（17 插入镜头 展示同一场景的细节）。
+//   - 右上角读数为“镜头 A” → “切出” → “镜头 A”；4.7 s 时硬切回起点。
+// 适用场景：适合展示反应，或遮掩时间跳跃和删除的口误。
+// 标签：切出镜头、反应镜头、补充镜头、切出镜头、观众、剪辑
+// 尺寸：539x208 px · 循环时长：9.4 秒
+// 依赖：共用辅助代码 camera2 -> ../../kit/camera2.js
+// 动态示例：https://jackengineer.github.io/motion-prompt/?lang=zh-Hans#189
+// 以上资源路径相对于本规格文件。
+//
+// cells[i](k, w, h, u)：k 为 CanvasRenderingContext2D（调用方已清空画布并用 save/restore 包裹），w、h 为尺寸，u 为秒数，范围 [0, cycle)。画面只取决于 u。
+// 以下为元素代码。CELLS、常量和辅助函数在 kit 中。
+
+// @element 21
+const CUT = [1.7, 3.0];
+CELLS[20] = shot((k, w, h, u) => {
+  const away = u >= CUT[0] && u < CUT[1];
+  if (!away) world(k, w, h, cam({ y: 1.4 }), { person: { x: 0, z: 5.5, walk: 0.45 * Math.sin(u * 6) }, extra: [[0.9, 0, 5.6, (kk) => { kk.fillStyle = C.g3; kk.fillRect(-0.3, 0, 0.6, 1.1); kk.fillRect(-0.4, 1.05, 0.8, 0.1); }]] });
+  else {
+    const t = u - CUT[0], ex = [];
+    [[-1.6, 3.2], [-0.2, 3.6], [1.3, 3.1], [0.6, 4.4], [-1.1, 4.6]].forEach(([x, z], i) => ex.push([x, 0, z, (kk) => { kk.save(); kk.translate(0, Math.abs(Math.sin(t * 9 + i)) * 0.05); person(kk, 1, { armUp: true, col: i % 2 ? C.blue : C.blueM }); kk.restore(); }]));
+    world(k, w, h, cam({ y: 1.6, pitch: -0.08 }), { buildings: false, trees: false, mountains: false, sun: null, extra: ex });
+  }
+  strip(k, w, h, [[0, CUT[0], 'A', C.g2], [CUT[0], CUT[1], '另一个主体', C.blue], [CUT[1], CYC, 'A', C.g2]], u);
+  return away ? '切出' : '镜头 A';
+});
