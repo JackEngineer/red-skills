@@ -47,6 +47,17 @@ ZIP 写入 `dist/<技能目录名>.zip`。再次打包会覆盖同名 ZIP。每�
 
 遇到不支持的格式、符号链接或超出体积限制的文件时，命令会指出问题。小红书限制单个文件最多 10 MiB，每项技能解压后合计最多 30 MiB。
 
+### 发布新版
+
+在要发布的 `main` 提交上创建一个新的 `skills-*` 标签，并单独推送该标签。
+
+```sh
+git tag skills-2026-11-26 main
+git push origin tag skills-2026-11-26
+```
+
+工作流从标签对应的提交打包全部技能。所有 ZIP 上传成功后，Release 会公开并设为 **Latest**，上面的免登录链接会自动指向新版本。如果发布失败，可以在 GitHub Actions 重跑该工作流。
+
 ## 许可与来源
 
 - Motion CN 基于 Shohei Ohtaki 原作，由 JackEngineer 维护简体中文汉化。发行包保留 [MIT 许可证](skills/motion-prompt/LICENSE.txt)和[第三方声明](skills/motion-prompt/THIRD-PARTY-NOTICES.md)。[原项目](https://github.com/showheyohtaki/motion-prompt)

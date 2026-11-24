@@ -1,0 +1,77 @@
+name: 发布小红书技能包
+
+on:
+  push:
+    tags: ['skills-*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: skill-releases
+  queue: max
+
+jobs:
+  publish:
+    if: github.event.created && !github.event.deleted
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: 打包全部技能并核对下载入口
+        run: |
+          python3 scripts/package_skills.py --all
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          readme = Path("README.md").read_text(encoding="utf-8")
+          for filename in re.findall(r"/releases/latest/download/([a-z0-9-]+\.zip)\)", readme):
+              if not (Path("dist") / filename).is_file():
+                  raise SystemExit(f"README 的下载入口缺少对应的 ZIP：{filename}")
+          PY
+      - name: 上传 ZIP 并发布 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          files=(dist/*.zip)
+
+          check_assets() {
+            local file
+            for file in "${files[@]}"; do
+              if ! jq -e --arg name "${file##*/}" \
+                  'any(.assets[]; .name == $name and .state == "uploaded")' <<< "$1" > /dev/null; then
+                echo "Release 缺少已上传的附件 ${file##*/}" >&2
+                return 1
+              fi
+            done
+          }
+
+          if release=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft,assets 2>&1); then
+            state=$(jq -r '.isDraft' <<< "$release")
+            case "$state" in
+              false)
+                check_assets "$release"
+                echo "${RELEASE_TAG} 已发布，ZIP 附件齐全"
+                exit 0
+                ;;
+              true) ;;
+              *) echo "无法确认 ${RELEASE_TAG} 的草稿状态" >&2; exit 1 ;;
+            esac
+          elif [[ "$release" == 'release not found' ]]; then
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --draft \
+              --title "小红书技能包 ${RELEASE_TAG#skills-}" \
+              --notes '下载对应 ZIP，在小红书创作后台的「更新版本」中选择上传。'
+          else
+            printf '%s\n' "$release" >&2
+            exit 1
+          fi
+
+          gh release upload "$RELEASE_TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          release=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json assets)
+          check_assets "$release"
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --tag "$RELEASE_TAG" --verify-tag --draft=false --latest
