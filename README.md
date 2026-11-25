@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | Motion CN | [motion-prompt](skills/motion-prompt/) | `106965` | `0.1.0` |
 | 小红书小工具开发指南 | [xhs-minitool-guide](skills/xhs-minitool-guide/) | `106990`（`xhs-minitool-guide2`） | `1.4.0` |
-| VidSave 视频下载 | [universal-video-download](skills/universal-video-download/) | `108821` | `1.0.0` |
+| VidSave 视频下载 | [universal-video-download](skills/universal-video-download/) | `108821` | `1.0.1` |
 
 上线状态于 2026-11-25 核对。[小红书 RED Skill 管理页](https://creator.xiaohongshu.com/new/skill-hub)
 
