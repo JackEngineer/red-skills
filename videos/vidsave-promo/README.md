@@ -10,6 +10,11 @@ npm run render
 
 主时间线和字幕在 `src/index.jsx`。镜头组件位于 `src/`，图片和旁白混音位于 `public/`。如需修改旁白，替换 `public/audio/vidsave-mix.m4a`，并按新音轨调整字幕时间。
 
+## 小红书发布素材
+
+- [封面图](xiaohongshu/cover.png)为 1086 × 1448 的不透明 PNG。封面由 Codex 内置图像工具生成并按原图保存，工具未提供具体模型版本。
+- [标题和描述](xiaohongshu/发布文案.md)为当前宣传片的发布文案。
+
 ## 素材
 
 - 动画界面是用法示意。里面的「日落骑行」和「雨夜电车」属于虚构示例。
