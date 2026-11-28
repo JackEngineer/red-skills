@@ -14,7 +14,7 @@
 
 - **Motion CN** 查询动效、镜头和视觉提示词。使用 Node.js 18 或以上运行 `node skills/motion-prompt/scripts/motion-prompt.js search 打字机 --limit 5`。预览链接和其他命令见[技能说明](skills/motion-prompt/SKILL.md)。
 - **小红书小工具开发指南** 用于查询容器能力、判断功能可行性和检查开发环境。将整个技能目录添加到支持 `SKILL.md` 的助手中，输入 `$xhs-minitool-guide help` 查看用法。源码中的 `doctor` 可检查官方开发规范、管理技能和本地运行时。见[技能说明](skills/xhs-minitool-guide/SKILL.md)和[环境诊断与恢复](skills/xhs-minitool-guide/references/doctor.md)。
-- **VidSave 视频下载** 处理有权保存的链接或本地视频，需要助手能运行本地命令。运行环境和命令见[运行说明](skills/universal-video-download/references/usage.md)。
+- **VidSave 视频下载** 处理有权保存的链接或本地视频，需要助手能运行本地命令。运行环境和命令见[运行说明](skills/universal-video-download/references/usage.md)。宣传片的源文件和导出命令见[Remotion 工程](videos/vidsave-promo/)。
 
 ## 打包上传
 
